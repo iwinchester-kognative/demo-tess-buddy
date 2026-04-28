@@ -17,10 +17,10 @@ const MERGE_POOL_BASE = [
   { customer_no: 33202, status: 'D', fname: 'James H.', lname: 'Wentworth',  criterion: 'Name + address match',  keep_cust: 33201 },
   { customer_no: 44502, status: 'K', fname: 'Patricia', lname: 'Miles',      criterion: 'Address match',         keep_cust: 44502 },
   { customer_no: 44501, status: 'D', fname: 'Pat',      lname: 'Miles',      criterion: 'Address match',         keep_cust: 44502 },
-  { customer_no: 55301, status: 'P', fname: 'David',    lname: 'Huang',      criterion: 'Email match' },
-  { customer_no: 55302, status: 'P', fname: 'David',    lname: 'Hwang',      criterion: 'Email match' },
-  { customer_no: 66104, status: 'P', fname: 'Susan',    lname: 'Thornton',   criterion: 'Phone + name match' },
-  { customer_no: 66105, status: 'P', fname: 'Susan B.', lname: 'Thornton',   criterion: 'Phone + name match' },
+  { customer_no: 55301, status: 'P', fname: 'Gerald',   lname: 'Kowalski',   criterion: 'Email match' },
+  { customer_no: 55302, status: 'P', fname: 'Brenda',   lname: 'Fitzgerald', criterion: 'Email match' },
+  { customer_no: 66104, status: 'P', fname: 'Marcus',   lname: 'Delacroix',  criterion: 'Phone + name match' },
+  { customer_no: 66105, status: 'P', fname: 'Yuki',     lname: 'Tanaka',     criterion: 'Phone + name match' },
 ]
 
 const MERGED_TODAY = [
@@ -110,17 +110,19 @@ const SEGMENT_CONSTITUENTS = [
   { customer_no: '88012', sort_name: 'Martinez, Carlos E.' },
 ]
 
+const DEMO_DISCLAIMER = `Full disclosure: I am running in demo mode, which means I have zero access to your actual database, no idea who your donors are, and I am essentially a golden retriever wearing a data analyst costume. That said, I can absolutely conjure a segment with complete confidence. What are you looking for?`
+
 const CLAUDE_TEMPLATES = [
   {
-    summary: 'Donors who gave more than $500 in the past 12 months and have not yet purchased a subscription for the current season.',
-    sql: "SELECT DISTINCT c.customer_no FROM T_CUSTOMER c JOIN T_DONATION d ON c.customer_no = d.customer_no WHERE d.don_amt > 500 AND d.don_dt >= DATEADD(year,-1,GETDATE()) AND c.customer_no NOT IN (SELECT customer_no FROM T_ORDER_LINE WHERE season_no = (SELECT MAX(season_no) FROM T_SEASON))"
+    summary: 'People Who Clap Between Movements (Lapsed Donors, Last Gift 12–24 Months)',
+    sql: "SELECT DISTINCT c.customer_no FROM T_CUSTOMER c JOIN T_DONATION d ON c.customer_no = d.customer_no WHERE d.don_dt BETWEEN DATEADD(year,-2,GETDATE()) AND DATEADD(year,-1,GETDATE()) AND c.customer_no NOT IN (SELECT customer_no FROM T_DONATION WHERE don_dt >= DATEADD(year,-1,GETDATE()))"
   },
   {
-    summary: 'Subscribers who attended 3 or more performances in any previous season but have not attended in the current season.',
+    summary: 'Season Ticket Holders Who Always Take the Aisle Seat (3+ Shows, No Current Season)',
     sql: "SELECT customer_no FROM T_ORDER_LINE WHERE season_no < (SELECT MAX(season_no) FROM T_SEASON) GROUP BY customer_no HAVING COUNT(DISTINCT perf_no) >= 3"
   },
   {
-    summary: 'First-time buyers from the 2024 season who have not made a subsequent charitable gift.',
+    summary: 'Donors Who Definitely Attended That One Chekhov Play But Won\'t Admit It (First-Time Buyers, No Follow-Up Gift)',
     sql: "SELECT DISTINCT c.customer_no FROM T_CUSTOMER c JOIN T_ORDER_LINE ol ON c.customer_no = ol.customer_no WHERE ol.season_no = 2024 AND c.customer_no NOT IN (SELECT customer_no FROM T_DONATION WHERE don_dt >= '2024-01-01')"
   },
 ]
@@ -465,8 +467,12 @@ window.fetch = async function demoFetch(input, init) {
   if (path === '/api/claude') {
     await delay(1100 + Math.random() * 500)
     const msg = ((body && body.userMessage) || '').toLowerCase()
+    if (_claudeIdx === 0) {
+      _claudeIdx++
+      return json({ content: [{ text: JSON.stringify({ refinement_question: DEMO_DISCLAIMER }) }] })
+    }
     if (msg.length < 20) {
-      return json({ content: [{ text: JSON.stringify({ refinement_question: "Happy to help! Could you add a bit more detail — for example, a time period, donation amount, or ticket-buying behaviour to focus on?" }) }] })
+      return json({ content: [{ text: JSON.stringify({ refinement_question: "I admire the brevity, but I'm going to need slightly more to work with. A time range, a dollar amount, a vibe — anything, really. I'm very suggestible." }) }] })
     }
     const tmpl = CLAUDE_TEMPLATES[_claudeIdx % CLAUDE_TEMPLATES.length]
     _claudeIdx++

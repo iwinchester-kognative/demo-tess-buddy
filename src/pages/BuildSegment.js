@@ -879,37 +879,37 @@ const styles = {
   },
 
   panel: {
-    backgroundColor: 'white', borderRadius: '12px', padding: '28px',
-    boxShadow: '0 2px 16px rgba(29,111,219,0.08)', border: '1px solid rgba(29,111,219,0.1)', maxWidth: '860px'
+    backgroundColor: 'white', borderRadius: '12px', padding: '20px',
+    boxShadow: '0 2px 16px rgba(29,111,219,0.08)', border: '1px solid rgba(29,111,219,0.1)', maxWidth: '720px'
   },
 
   // ---------- Build tab ----------
   buildWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    height: 'calc(100vh - 280px)',
-    minHeight: '400px'
+    height: '460px',
   },
 
   // Chat container
   chatContainer: {
     flex: 1, display: 'flex', flexDirection: 'column',
-    border: '1px solid rgba(29,111,219,0.12)', borderRadius: '10px', overflow: 'hidden'
+    border: '1px solid rgba(29,111,219,0.14)', borderRadius: '10px',
+    overflow: 'hidden', backgroundColor: '#fafbfd'
   },
   chatMessages: {
-    flex: 1, overflowY: 'auto', padding: '24px',
-    display: 'flex', flexDirection: 'column', gap: '16px'
+    flex: 1, overflowY: 'auto', padding: '14px 16px',
+    display: 'flex', flexDirection: 'column', gap: '10px'
   },
 
   // Empty state
   emptyState: {
     flex: 1, display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center',
-    color: '#9ca3af', textAlign: 'center', padding: '40px'
+    color: '#9ca3af', textAlign: 'center', padding: '24px'
   },
-  emptyIcon: { fontSize: '32px', color: '#1d6fdb', marginBottom: '12px' },
-  emptyTitle: { fontSize: '16px', fontWeight: '600', color: '#4b5563', marginBottom: '8px' },
-  emptyHint: { fontSize: '13px', color: '#9ca3af', lineHeight: '1.6', maxWidth: '400px' },
+  emptyIcon: { fontSize: '22px', color: '#c7d9f5', marginBottom: '8px' },
+  emptyTitle: { fontSize: '13px', fontWeight: '600', color: '#9ca3af', marginBottom: '4px' },
+  emptyHint: { fontSize: '12px', color: '#b0bac7', lineHeight: '1.5', maxWidth: '320px' },
 
   // Message rows
   userRow: { display: 'flex', justifyContent: 'flex-end' },
@@ -917,56 +917,72 @@ const styles = {
 
   // Bubbles
   bubble: {
-    maxWidth: '85%', padding: '12px 16px', borderRadius: '12px',
-    backgroundColor: '#f8fafd', fontSize: '14px', lineHeight: '1.6'
+    maxWidth: '80%', padding: '9px 13px', borderRadius: '10px',
+    backgroundColor: 'white', fontSize: '13px', lineHeight: '1.55',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.06)', border: '1px solid #edf0f5'
   },
-  userBubble: { backgroundColor: '#1d6fdb', color: 'white' },
-  systemBubble: { backgroundColor: 'transparent', color: '#4b5563', fontStyle: 'italic', padding: '8px 0' },
-  successBubble: { backgroundColor: '#f0fff4', color: '#16a34a', border: '1px solid #c6f6d5', fontStyle: 'normal' },
-  segmentBubble: { backgroundColor: 'rgba(29,111,219,0.06)', border: '1px solid rgba(29,111,219,0.2)' },
+  userBubble: {
+    backgroundColor: '#1d6fdb', color: 'white',
+    border: 'none', boxShadow: '0 1px 4px rgba(29,111,219,0.25)'
+  },
+  systemBubble: {
+    backgroundColor: 'transparent', color: '#9ca3af',
+    fontStyle: 'italic', padding: '4px 0', boxShadow: 'none', border: 'none', fontSize: '12px'
+  },
+  successBubble: {
+    backgroundColor: '#f0fff4', color: '#16a34a',
+    border: '1px solid #c6f6d5', boxShadow: 'none', fontStyle: 'normal'
+  },
+  segmentBubble: {
+    backgroundColor: 'rgba(29,111,219,0.05)',
+    border: '1px solid rgba(29,111,219,0.18)', boxShadow: 'none'
+  },
   segmentLabel: {
-    fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px',
-    textTransform: 'uppercase', color: '#1d6fdb', marginBottom: '6px'
+    fontSize: '10px', fontWeight: '700', letterSpacing: '0.5px',
+    textTransform: 'uppercase', color: '#1d6fdb', marginBottom: '5px'
   },
   bubbleText: { margin: 0, whiteSpace: 'pre-wrap' },
 
   // Typing
-  typing: { display: 'flex', gap: '4px', padding: '4px 0' },
-  dot: { fontSize: '10px', color: '#4b5563', animation: 'blink 1.4s infinite both' },
+  typing: { display: 'flex', gap: '4px', padding: '2px 0' },
+  dot: { fontSize: '8px', color: '#9ca3af', animation: 'blink 1.4s infinite both' },
 
   // Approval bar
   approvalBar: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '12px 24px', backgroundColor: 'rgba(29,111,219,0.06)', borderTop: '1px solid #bee3f8'
+    padding: '9px 16px', backgroundColor: 'rgba(29,111,219,0.05)',
+    borderTop: '1px solid rgba(29,111,219,0.12)'
   },
-  approvalText: { fontSize: '14px', fontWeight: '500', color: '#1d6fdb', margin: 0 },
-  approvalButtons: { display: 'flex', gap: '8px' },
+  approvalText: { fontSize: '12px', fontWeight: '600', color: '#1d6fdb', margin: 0 },
+  approvalButtons: { display: 'flex', gap: '6px' },
   approveBtn: {
-    padding: '8px 20px', backgroundColor: '#1d6fdb', color: 'white',
-    border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer'
+    padding: '6px 16px', backgroundColor: '#1d6fdb', color: 'white',
+    border: 'none', borderRadius: '7px', fontSize: '12px', fontWeight: '600', cursor: 'pointer'
   },
   rejectBtn: {
-    padding: '8px 20px', backgroundColor: 'transparent', color: '#1d6fdb',
-    border: '1px solid #1d6fdb', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer'
+    padding: '6px 16px', backgroundColor: 'transparent', color: '#1d6fdb',
+    border: '1px solid rgba(29,111,219,0.3)', borderRadius: '7px', fontSize: '12px', fontWeight: '600', cursor: 'pointer'
   },
 
   // Input area
   inputArea: {
     display: 'flex', alignItems: 'flex-end', gap: '8px',
-    padding: '16px 24px', borderTop: '1px solid #e2e8f0'
+    padding: '10px 12px', borderTop: '1px solid #edf0f5',
+    backgroundColor: 'white'
   },
   chatInput: {
-    flex: 1, padding: '12px 16px', border: '1px solid rgba(29,111,219,0.12)',
-    borderRadius: '10px', fontSize: '14px', fontFamily: 'inherit',
-    resize: 'none', outline: 'none', lineHeight: '1.5', maxHeight: '120px'
+    flex: 1, padding: '9px 13px', border: '1px solid rgba(29,111,219,0.14)',
+    borderRadius: '8px', fontSize: '13px', fontFamily: 'inherit',
+    resize: 'none', outline: 'none', lineHeight: '1.5', maxHeight: '100px',
+    backgroundColor: '#fafbfd'
   },
   sendBtn: {
-    width: '40px', height: '40px', borderRadius: '10px',
+    width: '34px', height: '34px', borderRadius: '8px',
     backgroundColor: '#1d6fdb', color: 'white', border: 'none',
-    fontSize: '18px', fontWeight: '700', cursor: 'pointer',
+    fontSize: '16px', fontWeight: '700', cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
   },
-  sendBtnDisabled: { backgroundColor: '#cbd5e0', cursor: 'not-allowed' },
+  sendBtnDisabled: { backgroundColor: '#d1d9e6', cursor: 'not-allowed' },
 
   // ---------- My Segments tab ----------
   sectionHeading: { fontSize: '16px', fontWeight: '700', color: '#0c1a33', marginBottom: '6px' },

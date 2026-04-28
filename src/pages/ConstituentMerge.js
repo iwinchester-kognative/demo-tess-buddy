@@ -691,23 +691,6 @@ function ConstituentMerge({ orgData }) {
         </div>
       )}
 
-      {unmergeConfirm && (
-        <div style={styles.overlay}>
-          <div style={styles.dialog}>
-            <h3 style={styles.dialogTitle}>Confirm Unmerge</h3>
-            <p style={styles.dialogText}>
-              This will restore <strong>#{unmergeConfirm.customer_no} ({unmergeConfirm.fname} {unmergeConfirm.lname})</strong> as a separate constituent record, detaching it from <strong>#{unmergeConfirm.keep_cust}</strong>. Continue?
-            </p>
-            <div style={styles.dialogButtons}>
-              <button style={styles.cancelButton} onClick={() => setUnmergeConfirm(null)}>Cancel</button>
-              <button style={{ ...styles.commitButton, backgroundColor: '#fef3c7', color: '#d97706', borderColor: '#fde68a' }} onClick={() => handleUnmergeRow(unmergeConfirm)}>
-                Yes, Unmerge
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {householdResult && (
         <div style={styles.overlay} onClick={() => setHouseholdResult(null)}>
           <div style={styles.dialog} onClick={e => e.stopPropagation()}>
@@ -927,6 +910,23 @@ function ConstituentMerge({ orgData }) {
             </div>
           )}
         </>
+      )}
+
+      {unmergeConfirm && (
+        <div style={styles.overlay}>
+          <div style={styles.dialog}>
+            <h3 style={styles.dialogTitle}>Confirm Unmerge</h3>
+            <p style={styles.dialogText}>
+              This will restore <strong>#{unmergeConfirm.customer_no} ({unmergeConfirm.fname} {unmergeConfirm.lname})</strong> as a separate constituent record, detaching it from <strong>#{unmergeConfirm.keep_cust}</strong>. Continue?
+            </p>
+            <div style={styles.dialogButtons}>
+              <button style={styles.cancelButton} onClick={() => setUnmergeConfirm(null)}>Cancel</button>
+              <button style={{ ...styles.commitButton, backgroundColor: '#fef3c7', color: '#d97706', borderColor: '#fde68a' }} onClick={() => handleUnmergeRow(unmergeConfirm)}>
+                Yes, Unmerge
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
