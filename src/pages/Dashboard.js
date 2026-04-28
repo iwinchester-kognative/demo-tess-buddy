@@ -6,6 +6,8 @@ import Screening from './Screening'
 import BuildSegment from './BuildSegment'
 import Dashboards from './Dashboards'
 import AiInsights from './AiInsights'
+import WealthScreening from './WealthScreening'
+import Lifecycles from './Lifecycles'
 
 function Dashboard({ session, orgData }) {
   const [apiStatus, setApiStatus] = useState('checking')
@@ -78,10 +80,12 @@ function Dashboard({ session, orgData }) {
           <div style={styles.navGroup}>
             <span style={styles.navChip}>Contact Point Screening</span>
             <button style={activePage === 'screening' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('screening')}>Contact Point Screening</button>
+            <button style={activePage === 'wealthScreening' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('wealthScreening')}>Wealth Screening</button>
           </div>
           <div style={styles.navGroup}>
             <span style={styles.navChip}>AI Segmentation & Analysis</span>
-            <button style={activePage === 'buildSegment' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('buildSegment')}>Build a Segment</button>
+            <button style={activePage === 'buildSegment' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('buildSegment')}>Segments</button>
+            <button style={activePage === 'lifecycles' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('lifecycles')}>Lifecycles</button>
             <button style={activePage === 'dashboards' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('dashboards')}>Dashboards</button>
             <button style={activePage === 'aiInsights' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('aiInsights')}>AI Insights</button>
           </div>
@@ -184,8 +188,14 @@ function Dashboard({ session, orgData }) {
         {activePage === 'agedRecordRemoval' && (
           <AgedRecordRemoval orgData={orgData} />
         )}
-{activePage === 'screening' && (
+        {activePage === 'screening' && (
           <Screening orgData={orgData} />
+        )}
+        {activePage === 'wealthScreening' && (
+          <WealthScreening />
+        )}
+        {activePage === 'lifecycles' && (
+          <Lifecycles />
         )}
         {activePage === 'buildSegment' && (
           <BuildSegment orgData={orgData} />
