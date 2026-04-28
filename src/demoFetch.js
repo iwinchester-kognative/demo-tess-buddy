@@ -211,6 +211,10 @@ async function handleExec(body) {
       )
       return ok()
     }
+    if (mode === 'unmerge') {
+      await delay(900)
+      return ok()
+    }
     if (mode === 'convert_to_household') {
       const n1   = Number(param(params, '@customer_no_1'))
       const crit = (_pool.find(r => r.customer_no === n1) || {}).criterion

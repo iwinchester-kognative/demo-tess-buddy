@@ -29,9 +29,14 @@ function ConstituentMerge({ orgData }) {
   const [separateHhNo, setSeparateHhNo] = useState('')
   const [recentMerges, setRecentMerges] = useState([])
   const [recentLoading, setRecentLoading] = useState(false)
-  const [toolsLoading, setToolsLoading] = useState(null)   // 'merge' | 'separate' | null
+  const [toolsLoading, setToolsLoading] = useState(null)   // 'merge' | 'separate' | 'unmerge' | null
   const [mergeToolResult, setMergeToolResult] = useState(null)
   const [hhToolResult, setHhToolResult] = useState(null)
+  const [unmergeNo, setUnmergeNo] = useState('')
+  const [unmergeToolResult, setUnmergeToolResult] = useState(null)
+  const [unmergeConfirm, setUnmergeConfirm] = useState(null)   // row being confirmed
+  const [unmergingRow, setUnmergingRow] = useState(null)        // customer_no being processed
+  const [unmergedRows, setUnmergedRows] = useState(new Set())   // customer_nos already unmerged
  
   const headers = {
     'x-tessitura-auth': orgData.organizations.tessitura_auth_string,
@@ -329,6 +334,32 @@ function ConstituentMerge({ orgData }) {
       separatedAt: new Date().toLocaleTimeString()
     })
     setSeparateHhNo('')
+    setToolsLoading(null)
+  }
+
+  const handleUnmergeRow = async (row) => {
+    setUnmergeConfirm(null)
+    setUnmergingRow(row.customer_no)
+    await callProc(PROCS.managePair, [
+      { Name: '@customer_no_1', Value: String(row.customer_no) },
+      { Name: '@mode',          Value: 'unmerge' }
+    ])
+    setUnmergedRows(prev => new Set([...prev, row.customer_no]))
+    setUnmergingRow(null)
+  }
+
+  const handleUnmergeTool = async () => {
+    if (!unmergeNo) return
+    setToolsLoading('unmerge')
+    setUnmergeToolResult(null)
+    await callProc(PROCS.managePair, [
+      { Name: '@customer_no_1', Value: String(unmergeNo) },
+      { Name: '@mode',          Value: 'unmerge' }
+    ])
+    const [f, l] = fakeName(unmergeNo)
+    const restoredNo = Number(unmergeNo) + 5000
+    setUnmergeToolResult({ originalNo: unmergeNo, originalName: `${f} ${l}`, restoredNo, ranAt: new Date().toLocaleTimeString() })
+    setUnmergeNo('')
     setToolsLoading(null)
   }
 
@@ -660,6 +691,23 @@ function ConstituentMerge({ orgData }) {
         </div>
       )}
 
+      {unmergeConfirm && (
+        <div style={styles.overlay}>
+          <div style={styles.dialog}>
+            <h3 style={styles.dialogTitle}>Confirm Unmerge</h3>
+            <p style={styles.dialogText}>
+              This will restore <strong>#{unmergeConfirm.customer_no} ({unmergeConfirm.fname} {unmergeConfirm.lname})</strong> as a separate constituent record, detaching it from <strong>#{unmergeConfirm.keep_cust}</strong>. Continue?
+            </p>
+            <div style={styles.dialogButtons}>
+              <button style={styles.cancelButton} onClick={() => setUnmergeConfirm(null)}>Cancel</button>
+              <button style={{ ...styles.commitButton, backgroundColor: '#fef3c7', color: '#d97706', borderColor: '#fde68a' }} onClick={() => handleUnmergeRow(unmergeConfirm)}>
+                Yes, Unmerge
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {householdResult && (
         <div style={styles.overlay} onClick={() => setHouseholdResult(null)}>
           <div style={styles.dialog} onClick={e => e.stopPropagation()}>
@@ -767,6 +815,39 @@ function ConstituentMerge({ orgData }) {
             )}
           </div>
 
+          {/* ── Unmerge ── */}
+          <div style={{ ...styles.toolCard, marginTop: '24px' }}>
+            <h3 style={styles.actionTitle}>Unmerge</h3>
+            <p style={styles.actionDesc}>
+              Reverse a previous merge by restoring a deleted constituent record as its own independent entry. Enter the customer number of the record that was merged away.
+            </p>
+            <div style={styles.toolInputRow}>
+              <input
+                type="text"
+                placeholder="Deleted Customer #"
+                value={unmergeNo}
+                onChange={e => { setUnmergeNo(e.target.value); setUnmergeToolResult(null) }}
+                style={styles.toolInput}
+                disabled={toolsLoading === 'unmerge'}
+              />
+              <button
+                style={{ ...styles.button, background: 'linear-gradient(135deg, #d97706, #f59e0b)', opacity: (!unmergeNo || toolsLoading === 'unmerge') ? 0.5 : 1, cursor: (!unmergeNo || toolsLoading === 'unmerge') ? 'not-allowed' : 'pointer' }}
+                onClick={handleUnmergeTool}
+                disabled={!unmergeNo || toolsLoading === 'unmerge'}
+              >
+                {toolsLoading === 'unmerge' ? 'Restoring...' : 'Unmerge'}
+              </button>
+            </div>
+            {unmergeToolResult && (
+              <div style={styles.toolResult}>
+                <span style={{ ...styles.badge, backgroundColor: '#d97706', marginRight: '10px' }}>Restored</span>
+                <span style={styles.toolResultText}>
+                  #{unmergeToolResult.originalNo} ({unmergeToolResult.originalName}) restored as independent record #{unmergeToolResult.restoredNo} at {unmergeToolResult.ranAt}
+                </span>
+              </div>
+            )}
+          </div>
+
         </>
       )}
 
@@ -796,20 +877,23 @@ function ConstituentMerge({ orgData }) {
                     <th style={styles.th}>Name</th>
                     <th style={styles.th}>Kept As</th>
                     <th style={styles.th}>Criterion</th>
+                    <th style={styles.th}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentMerges.map((row, index) => {
                     const deletedUrl = `${TESSITURA_BASE}/${row.customer_no}/dashboard`
                     const keptUrl = `${TESSITURA_BASE}/${row.keep_cust}/dashboard`
+                    const isUnmerged = unmergedRows.has(row.customer_no)
+                    const isUnmerging = unmergingRow === row.customer_no
                     return (
                       <tr
                         key={`${row.customer_no}-${index}`}
                         style={index % 2 === 0 ? styles.rowEven : styles.rowOdd}
                       >
                         <td style={styles.td}>
-                          <span style={{ ...styles.badge, backgroundColor: '#718096' }}>
-                            Merged
+                          <span style={{ ...styles.badge, backgroundColor: isUnmerged ? '#d97706' : '#718096' }}>
+                            {isUnmerged ? 'Unmerged' : 'Merged'}
                           </span>
                         </td>
                         <td style={styles.td}>
@@ -824,6 +908,17 @@ function ConstituentMerge({ orgData }) {
                           </a>
                         </td>
                         <td style={styles.td}>{row.criterion}</td>
+                        <td style={styles.td}>
+                          {!isUnmerged && (
+                            <button
+                              style={{ ...styles.cancelPairButton, opacity: isUnmerging ? 0.5 : 1, cursor: isUnmerging ? 'not-allowed' : 'pointer' }}
+                              onClick={() => setUnmergeConfirm(row)}
+                              disabled={isUnmerging}
+                            >
+                              {isUnmerging ? '...' : '↩ Unmerge'}
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     )
                   })}

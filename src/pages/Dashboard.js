@@ -94,7 +94,7 @@ function Dashboard({ session, orgData }) {
       </div>
       <div style={styles.main}>
         <div style={styles.demoBanner}>
-          🎭 <strong>Demo Mode</strong> — All data is simulated. No real Tessitura connection.
+          🎭 Have you ever wanted to click random buttons in Tessitura without the fear of breaking something? Well, go crazy! This is a testing environment.
         </div>
         {activePage === 'dashboard' && (
           <>
