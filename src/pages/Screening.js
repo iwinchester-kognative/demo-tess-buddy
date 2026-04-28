@@ -610,18 +610,6 @@ function BulkTab({ streamLabel, orgData }) {
         already verified or marked inactive are skipped automatically, so you only check what needs
         checking.
       </p>
-      <p style={styles.hint}>
-        Haven't created your list yet? Do it{' '}
-        <a
-          href="https://spoletussc0webtest.tnhs.cloud/Tessitura/#/lists-and-templates/list-manager"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={styles.link}
-        >
-          in Tessitura
-        </a>
-        {' '}and return here.
-      </p>
 
       {listsError && (
         <div style={{ ...styles.messageBox, backgroundColor: '#fff5f5', borderColor: '#feb2b2', color: '#c53030' }}>
@@ -1264,24 +1252,6 @@ function SingularTab({ orgData }) {
             </div>
           )}
 
-      {!pulled && !melissaRecord && !summary && (
-        <ResultsGridPlaceholder singleRow />
-      )}
-    </div>
-  )
-}
-
-// ---------- Shared placeholder for results ----------
-
-function ResultsGridPlaceholder({ singleRow = false }) {
-  return (
-    <div style={styles.resultsBox}>
-      <p style={styles.resultsHeader}>Results</p>
-      <p style={styles.resultsEmpty}>
-        {singleRow
-          ? 'Results for this customer will show up here once you run a check.'
-          : 'Results will show up here — each record that was updated in Tessitura.'}
-      </p>
     </div>
   )
 }
@@ -1319,13 +1289,6 @@ const styles = {
   panel: { backgroundColor: 'white', borderRadius: '12px', padding: '28px', boxShadow: '0 2px 16px rgba(29,111,219,0.08)', border: '1px solid rgba(29,111,219,0.1)', maxWidth: '860px' },
   sectionHeading: { fontSize: '16px', fontWeight: '700', color: '#0c1a33', marginBottom: '6px' },
   sectionBody: { fontSize: '13px', color: '#4b5563', lineHeight: '1.6', marginBottom: '12px', maxWidth: '640px' },
-  hint: {
-    fontSize: '12px', color: '#4a5568', lineHeight: '1.6',
-    marginTop: '0', marginBottom: '20px', maxWidth: '640px',
-    padding: '10px 14px', backgroundColor: '#f0f7ff',
-    borderLeft: '3px solid #1d6fdb', borderRadius: '4px'
-  },
-  link: { color: '#1d6fdb', textDecoration: 'underline', fontWeight: '600' },
 
   formRow: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
   label: { fontSize: '12px', fontWeight: '700', color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.5px', minWidth: '160px' },
@@ -1391,12 +1354,6 @@ const styles = {
   logMuted:  { fontSize: '11px', color: '#4b5563' },
   logMono:   { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', wordBreak: 'break-all' },
 
-  resultsBox: {
-    marginTop: '24px', padding: '20px', backgroundColor: '#f0f7ff',
-    borderRadius: '8px', border: '1px dashed #d0d4db'
-  },
-  resultsHeader: { fontSize: '12px', fontWeight: '700', color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' },
-  resultsEmpty: { fontSize: '13px', color: '#4b5563', margin: 0 },
 
   // --- Singular email flow ---
   messageBox: {

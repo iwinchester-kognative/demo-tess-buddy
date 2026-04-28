@@ -2,12 +2,9 @@ import React, { useState } from 'react'
 import { supabase } from '../supabaseClient'
 
 function Login() {
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [resetSent, setResetSent] = useState(false)
-  const [mode, setMode] = useState('login') // 'login' or 'reset'
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -15,43 +12,15 @@ function Login() {
     setError(null)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      console.log('login data:', data)
-      console.log('login error:', error)
-
+      const { error } = await supabase.auth.signInWithPassword({ password })
       if (error) {
         setError(error.message)
         setLoading(false)
       }
     } catch (err) {
-      console.error('unexpected error:', err)
       setError('Unexpected error. Please try again.')
       setLoading(false)
     }
-  }
-
-  const handleResetPassword = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/reset-password'
-      })
-      if (error) {
-        setError(error.message)
-      } else {
-        setResetSent(true)
-      }
-    } catch (err) {
-      setError('Unexpected error. Please try again.')
-    }
-    setLoading(false)
   }
 
   return (
@@ -63,85 +32,24 @@ function Login() {
         </div>
         <p style={styles.subtitle}>Tessitura Management Portal</p>
 
-        {mode === 'login' && (
-          <form onSubmit={handleLogin}>
-            <div style={styles.field}>
-              <label style={styles.label}>Email</label>
-              <input
-                style={styles.input}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Password</label>
-              <input
-                style={styles.input}
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
-            </div>
-            {error && <p style={styles.error}>{error}</p>}
-            <button style={styles.button} type="submit" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-            <p
-              style={styles.forgotLink}
-              onClick={() => { setMode('reset'); setError(null); setResetSent(false) }}
-            >
-              Forgot password?
-            </p>
-          </form>
-        )}
-
-        {mode === 'reset' && !resetSent && (
-          <form onSubmit={handleResetPassword}>
-            <p style={{ fontSize: '14px', color: '#4b5563', marginBottom: '20px', lineHeight: '1.5' }}>
-              Enter your email and we'll send you a link to reset your password.
-            </p>
-            <div style={styles.field}>
-              <label style={styles.label}>Email</label>
-              <input
-                style={styles.input}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-            {error && <p style={styles.error}>{error}</p>}
-            <button style={styles.button} type="submit" disabled={loading}>
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-            <p
-              style={styles.forgotLink}
-              onClick={() => { setMode('login'); setError(null) }}
-            >
-              Back to sign in
-            </p>
-          </form>
-        )}
-
-        {mode === 'reset' && resetSent && (
-          <div>
-            <p style={{ fontSize: '14px', color: '#16a34a', marginBottom: '20px', lineHeight: '1.5', textAlign: 'center' }}>
-              Reset link sent! Check your email.
-            </p>
-            <button
-              style={styles.button}
-              onClick={() => { setMode('login'); setResetSent(false); setError(null) }}
-            >
-              Back to Sign In
-            </button>
+        <form onSubmit={handleLogin}>
+          <div style={styles.field}>
+            <label style={styles.label}>Password</label>
+            <input
+              style={styles.input}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoFocus
+              required
+            />
           </div>
-        )}
+          {error && <p style={styles.error}>{error}</p>}
+          <button style={styles.button} type="submit" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
       </div>
     </div>
   )

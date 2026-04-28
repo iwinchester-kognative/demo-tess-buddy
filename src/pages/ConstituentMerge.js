@@ -822,31 +822,64 @@ function ConstituentMerge({ orgData }) {
           <div style={styles.actionRow}>
             <div style={styles.statCard}>
               <p style={styles.statLabel}>Merges Completed</p>
-              <p style={styles.statValue}>—</p>
+              <p style={styles.statValue}>1,247</p>
               <p style={styles.statHint}>Total merges executed to date</p>
             </div>
             <div style={styles.statCard}>
-              <p style={styles.statLabel}>Potential Duplicates</p>
-              <p style={styles.statValue}>—</p>
-              <p style={styles.statHint}>Current unresolved pairs in the pool</p>
+              <p style={styles.statLabel}>Pending Pairs</p>
+              <p style={styles.statValue}>23</p>
+              <p style={styles.statHint}>Unresolved pairs currently in the pool</p>
             </div>
             <div style={styles.statCard}>
-              <p style={styles.statLabel}>Top Dup Sources</p>
+              <p style={styles.statLabel}>Match Breakdown</p>
               <div style={styles.sourceList}>
                 <div style={styles.sourceRow}>
                   <span style={styles.sourceDot} />
-                  <span style={styles.sourceLabel}>TrueTix</span>
-                  <span style={styles.sourceValue}>—</span>
+                  <span style={styles.sourceLabel}>Email match</span>
+                  <span style={styles.sourceValue}>612</span>
                 </div>
                 <div style={styles.sourceRow}>
                   <span style={{ ...styles.sourceDot, backgroundColor: '#2b6cb0' }} />
-                  <span style={styles.sourceLabel}>DON2</span>
-                  <span style={styles.sourceValue}>—</span>
+                  <span style={styles.sourceLabel}>Phone match</span>
+                  <span style={styles.sourceValue}>341</span>
                 </div>
                 <div style={styles.sourceRow}>
                   <span style={{ ...styles.sourceDot, backgroundColor: '#805ad5' }} />
-                  <span style={styles.sourceLabel}>User-created</span>
-                  <span style={styles.sourceValue}>—</span>
+                  <span style={styles.sourceLabel}>Name + address</span>
+                  <span style={styles.sourceValue}>294</span>
+                </div>
+              </div>
+              <p style={styles.statHint}>By primary matching criterion</p>
+            </div>
+          </div>
+          <div style={{ ...styles.actionRow, marginTop: 0 }}>
+            <div style={styles.statCard}>
+              <p style={styles.statLabel}>This Month</p>
+              <p style={styles.statValue}>84</p>
+              <p style={styles.statHint}>Merges completed in April 2026</p>
+            </div>
+            <div style={styles.statCard}>
+              <p style={styles.statLabel}>Households Created</p>
+              <p style={styles.statValue}>38</p>
+              <p style={styles.statHint}>Pairs converted to households vs. merged</p>
+            </div>
+            <div style={styles.statCard}>
+              <p style={styles.statLabel}>Top Duplicate Sources</p>
+              <div style={styles.sourceList}>
+                <div style={styles.sourceRow}>
+                  <span style={styles.sourceDot} />
+                  <span style={styles.sourceLabel}>TrueTix import</span>
+                  <span style={styles.sourceValue}>54%</span>
+                </div>
+                <div style={styles.sourceRow}>
+                  <span style={{ ...styles.sourceDot, backgroundColor: '#2b6cb0' }} />
+                  <span style={styles.sourceLabel}>DON2 import</span>
+                  <span style={styles.sourceValue}>29%</span>
+                </div>
+                <div style={styles.sourceRow}>
+                  <span style={{ ...styles.sourceDot, backgroundColor: '#805ad5' }} />
+                  <span style={styles.sourceLabel}>Manual entry</span>
+                  <span style={styles.sourceValue}>17%</span>
                 </div>
               </div>
               <p style={styles.statHint}>created_by breakdown from t_customer</p>

@@ -9,25 +9,25 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 // ---- Static fake data -----------------------------------------
 
 const MERGE_POOL_BASE = [
-  { customer_no: 11042, status: 'K', fname: 'Margaret', lname: 'Chen',       criterion: 10, keep_cust: 11042 },
-  { customer_no: 11043, status: 'D', fname: 'Margaret', lname: 'Chene',      criterion: 10, keep_cust: 11042 },
-  { customer_no: 22104, status: 'K', fname: 'Robert',   lname: 'Smith',      criterion: 11, keep_cust: 22104 },
-  { customer_no: 22103, status: 'D', fname: 'Robert',   lname: 'Smyth',      criterion: 11, keep_cust: 22104 },
-  { customer_no: 33201, status: 'K', fname: 'James',    lname: 'Wentworth',  criterion: 12, keep_cust: 33201 },
-  { customer_no: 33202, status: 'D', fname: 'James H.', lname: 'Wentworth',  criterion: 12, keep_cust: 33201 },
-  { customer_no: 44502, status: 'K', fname: 'Patricia', lname: 'Miles',      criterion: 13, keep_cust: 44502 },
-  { customer_no: 44501, status: 'D', fname: 'Pat',      lname: 'Miles',      criterion: 13, keep_cust: 44502 },
-  { customer_no: 55301, status: 'P', fname: 'David',    lname: 'Huang',      criterion: 14 },
-  { customer_no: 55302, status: 'P', fname: 'David',    lname: 'Hwang',      criterion: 14 },
-  { customer_no: 66104, status: 'P', fname: 'Susan',    lname: 'Thornton',   criterion: 15 },
-  { customer_no: 66105, status: 'P', fname: 'Susan B.', lname: 'Thornton',   criterion: 15 },
+  { customer_no: 11042, status: 'K', fname: 'Margaret', lname: 'Chen',       criterion: 'Email match',           keep_cust: 11042 },
+  { customer_no: 11043, status: 'D', fname: 'Margaret', lname: 'Chene',      criterion: 'Email match',           keep_cust: 11042 },
+  { customer_no: 22104, status: 'K', fname: 'Robert',   lname: 'Smith',      criterion: 'Phone match',           keep_cust: 22104 },
+  { customer_no: 22103, status: 'D', fname: 'Robert',   lname: 'Smyth',      criterion: 'Phone match',           keep_cust: 22104 },
+  { customer_no: 33201, status: 'K', fname: 'James',    lname: 'Wentworth',  criterion: 'Name + address match',  keep_cust: 33201 },
+  { customer_no: 33202, status: 'D', fname: 'James H.', lname: 'Wentworth',  criterion: 'Name + address match',  keep_cust: 33201 },
+  { customer_no: 44502, status: 'K', fname: 'Patricia', lname: 'Miles',      criterion: 'Address match',         keep_cust: 44502 },
+  { customer_no: 44501, status: 'D', fname: 'Pat',      lname: 'Miles',      criterion: 'Address match',         keep_cust: 44502 },
+  { customer_no: 55301, status: 'P', fname: 'David',    lname: 'Huang',      criterion: 'Email match' },
+  { customer_no: 55302, status: 'P', fname: 'David',    lname: 'Hwang',      criterion: 'Email match' },
+  { customer_no: 66104, status: 'P', fname: 'Susan',    lname: 'Thornton',   criterion: 'Phone + name match' },
+  { customer_no: 66105, status: 'P', fname: 'Susan B.', lname: 'Thornton',   criterion: 'Phone + name match' },
 ]
 
 const MERGED_TODAY = [
-  { customer_no: 11042, sort_name: 'Chen, Margaret',    merged_dt: new Date().toISOString() },
-  { customer_no: 22104, sort_name: 'Smith, Robert',     merged_dt: new Date().toISOString() },
-  { customer_no: 33201, sort_name: 'Wentworth, James',  merged_dt: new Date().toISOString() },
-  { customer_no: 44502, sort_name: 'Miles, Patricia',   merged_dt: new Date().toISOString() },
+  { customer_no: 11043, fname: 'Margaret', lname: 'Chene',    sort_name: 'Chene, Margaret',   keep_cust: 11042, criterion: 'Email match',          merged_dt: new Date().toISOString() },
+  { customer_no: 22103, fname: 'Robert',   lname: 'Smyth',    sort_name: 'Smyth, Robert',     keep_cust: 22104, criterion: 'Phone match',           merged_dt: new Date().toISOString() },
+  { customer_no: 33202, fname: 'James H.', lname: 'Wentworth',sort_name: 'Wentworth, James H.',keep_cust: 33201, criterion: 'Name + address match',  merged_dt: new Date().toISOString() },
+  { customer_no: 44501, fname: 'Pat',      lname: 'Miles',    sort_name: 'Miles, Pat',        keep_cust: 44502, criterion: 'Address match',          merged_dt: new Date().toISOString() },
 ]
 
 const AGED_RECORDS_BASE = [
@@ -270,31 +270,83 @@ async function handleExec(body) {
   // ---- Contact Screening ----
   if (proc === 'kognative_CONTACT_SCREEN') {
     const custNo = param(params, '@customer_no')
+
+    // For singular lookups, fall back to a generated record if the customer_no
+    // isn't in our seed data — so any number typed in the demo works end-to-end.
+    function fakeSortName(cn) {
+      const FAKE_NAMES = [
+        'Williams, Arthur J.', 'Patel, Priya', 'O\'Brien, Kathleen',
+        'Nakamura, Hideo', 'Rosenberg, David', 'Torres, Carmen',
+        'Blackwell, George', 'Osei, Abena', 'Ferreira, Lucas',
+        'Gustafsson, Lena'
+      ]
+      return FAKE_NAMES[Number(cn) % FAKE_NAMES.length]
+    }
+
     if (mode === 'EMAIL_PULL') {
-      if (custNo) return json(EMAIL_ROWS.filter(r => String(r.customer_no) === String(custNo)))
+      if (custNo) {
+        const found = EMAIL_ROWS.filter(r => String(r.customer_no) === String(custNo))
+        if (found.length > 0) return json(found)
+        // generate a plausible record for any other customer_no
+        const FAKE_EMAILS = [
+          'a.williams@gmail.com', 'ppatel@hotmail.com', 'k.obrien@gmial.com',
+          'h.nakamura@yahoo.com', 'drosenberg@invalid-domain-xyz.io',
+          'carmen.t@gmail.com', 'gblackwell@outloook.com',
+          'abena.osei@protonmail.com', 'lferreira@icloud.com', 'lgustafsson@comcast.net'
+        ]
+        const idx = Number(custNo) % FAKE_EMAILS.length
+        return json([{ customer_no: Number(custNo), sort_name: fakeSortName(custNo), email: FAKE_EMAILS[idx] }])
+      }
       return json(EMAIL_ROWS)
     }
     if (mode === 'EMAIL_WRITE') {
       const cn  = Number(custNo)
-      const row = EMAIL_ROWS.find(r => r.customer_no === cn) || {}
+      const row = EMAIL_ROWS.find(r => r.customer_no === cn) || { sort_name: fakeSortName(cn) }
       return json([{ customer_no: cn, sort_name: row.sort_name || '', action_taken: param(params, '@result') }])
     }
     if (mode === 'PHONE_PULL') {
-      if (custNo) return json(PHONE_ROWS.filter(r => String(r.customer_no) === String(custNo)))
+      if (custNo) {
+        const found = PHONE_ROWS.filter(r => String(r.customer_no) === String(custNo))
+        if (found.length > 0) return json(found)
+        const FAKE_PHONES = [
+          '8435550192', '9999999999', '8435550347', '0000000001',
+          '8435550814', '8435550623', '8435550488', '8435550732',
+          '8435551047', '8435550965'
+        ]
+        const idx = Number(custNo) % FAKE_PHONES.length
+        return json([{ customer_no: Number(custNo), sort_name: fakeSortName(custNo), phone: FAKE_PHONES[idx] }])
+      }
       return json(PHONE_ROWS)
     }
     if (mode === 'PHONE_WRITE') {
       const cn  = Number(custNo)
-      const row = PHONE_ROWS.find(r => r.customer_no === cn) || {}
+      const row = PHONE_ROWS.find(r => r.customer_no === cn) || { sort_name: fakeSortName(cn) }
       return json([{ customer_no: cn, sort_name: row.sort_name || '', action_taken: param(params, '@result') }])
     }
     if (mode === 'ADDRESS_PULL') {
-      if (custNo) return json(ADDRESS_ROWS.filter(r => String(r.customer_no) === String(custNo)))
+      if (custNo) {
+        const found = ADDRESS_ROWS.filter(r => String(r.customer_no) === String(custNo))
+        if (found.length > 0) return json(found)
+        const FAKE_ADDRS = [
+          { street1: '42 Palmetto Blvd', street2: '',          city: 'Charleston', state: 'SC', postal_code: '29403' },
+          { street1: '99999 Nowhere Rd', street2: '',          city: 'Gotham',     state: 'XX', postal_code: '00000' },
+          { street1: '1104 Churh St',    street2: 'Apt 3B',    city: 'Charlston',  state: 'SC', postal_code: '29403' },
+          { street1: '815 Meeting St',   street2: '',          city: 'Charleston', state: 'SC', postal_code: '29403' },
+          { street1: '221 King St',      street2: 'Suite 400', city: 'Charleston', state: 'SC', postal_code: '29401' },
+          { street1: '560 E Bay St',     street2: '',          city: 'Charleston', state: 'SC', postal_code: '29403' },
+          { street1: '77 Wentworth St',  street2: '',          city: 'Charleston', state: 'SC', postal_code: '29403' },
+          { street1: '300 Calhoun St',   street2: 'Apt 1C',    city: 'Charleston', state: 'SC', postal_code: '29403' },
+          { street1: '1 Broad St',       street2: '',          city: 'Chrleston',  state: 'SC', postal_code: '29401' },
+          { street1: '48 Line St',       street2: '',          city: 'Charleston', state: 'SC', postal_code: '29403' },
+        ]
+        const addr = FAKE_ADDRS[Number(custNo) % FAKE_ADDRS.length]
+        return json([{ customer_no: Number(custNo), sort_name: fakeSortName(custNo), ...addr }])
+      }
       return json(ADDRESS_ROWS)
     }
     if (mode === 'ADDRESS_WRITE') {
       const cn  = Number(custNo)
-      const row = ADDRESS_ROWS.find(r => r.customer_no === cn) || {}
+      const row = ADDRESS_ROWS.find(r => r.customer_no === cn) || { sort_name: fakeSortName(cn) }
       return json([{ customer_no: cn, sort_name: row.sort_name || '', action_taken: param(params, '@result') }])
     }
     return ok()

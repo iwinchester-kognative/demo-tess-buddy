@@ -12,9 +12,12 @@ let _session = null
 
 export const supabase = {
   auth: {
-    signInWithPassword: async ({ email }) => {
+    signInWithPassword: async ({ password }) => {
       await new Promise(r => setTimeout(r, 600))
-      _session = { ...FAKE_SESSION, user: { ...FAKE_SESSION.user, email: email || 'demo@tessbuddy.app' } }
+      if (password !== 'Testing1234!') {
+        return { data: { session: null }, error: { message: 'Incorrect password.' } }
+      }
+      _session = { ...FAKE_SESSION }
       setTimeout(() => _listeners.forEach(cb => cb('SIGNED_IN', _session)), 0)
       return { data: { session: _session }, error: null }
     },
