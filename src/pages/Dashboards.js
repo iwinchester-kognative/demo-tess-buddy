@@ -185,13 +185,15 @@ function PacingChart({ data, currentWeek }) {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
-function Dashboards() {
+function Dashboards({ embedded }) {
   return (
     <div>
-      <div style={s.header}>
-        <h1 style={s.title}>Dashboards</h1>
-        <p style={s.subtitle}>Season sales pacing — cumulative revenue compared to prior year.</p>
-      </div>
+      {!embedded && (
+        <div style={s.header}>
+          <h1 style={s.title}>Dashboards</h1>
+          <p style={s.subtitle}>Season sales pacing — cumulative revenue compared to prior year.</p>
+        </div>
+      )}
       <PacingTab />
     </div>
   )

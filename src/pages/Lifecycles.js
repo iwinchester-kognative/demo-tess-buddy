@@ -145,76 +145,54 @@ function FlowBar({ stages }) {
 
 // ─── Stage card (used for donor + ticket lifecycle) ───────────────────────────
 
-function StageCard({ stage, index, total, isActive, onClick, onMakeList, listBuilding, listBuilt }) {
+function StageCard({ stage, onMakeList, listBuilding, listBuilt }) {
   return (
     <div
       style={{
-        cursor: 'pointer', background: 'white', borderRadius: '12px',
-        border: `1px solid ${isActive ? stage.color + '60' : 'rgba(29,111,219,0.1)'}`,
-        boxShadow: isActive ? `0 4px 20px ${stage.color}22` : '0 2px 8px rgba(29,111,219,0.06)',
-        overflow: 'hidden', transition: 'box-shadow 0.15s, border-color 0.15s',
+        background: 'white', borderRadius: '12px',
+        border: `1px solid ${stage.color}30`,
+        boxShadow: `0 2px 12px ${stage.color}12`,
+        overflow: 'hidden',
       }}
-      onClick={onClick}
     >
       <div style={{ padding: '16px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>{stage.icon}</span>
-            <div>
-              <span style={{ fontSize: '10px', fontWeight: '700', color: '#9ca3af', fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Stage {index + 1} of {total}{stage.status ? ` · ${stage.status}` : ''}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+          <span style={{ fontSize: '20px' }}>{stage.icon}</span>
+          <div>
+            {stage.status && (
+              <span style={{ fontSize: '10px', fontWeight: '700', color: '#9ca3af', fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase', display: 'block' }}>
+                {stage.status}
               </span>
-              <p style={{ fontSize: '14px', fontWeight: '700', color: stage.color, margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{stage.label}</p>
-            </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '20px', fontWeight: '800', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1 }}>{stage.count}</p>
-            <p style={{ fontSize: '10px', color: '#9ca3af', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>constituents</p>
+            )}
+            <p style={{ fontSize: '14px', fontWeight: '700', color: stage.color, margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{stage.label}</p>
           </div>
         </div>
-        <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.55', margin: 0, fontFamily: "'Inter', sans-serif" }}>{stage.description}</p>
-      </div>
+        <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.55', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>{stage.description}</p>
 
-      <div style={{ padding: '6px 18px 10px', display: 'flex', justifyContent: 'flex-end' }}>
-        <span style={{ fontSize: '11px', color: '#9ca3af', fontFamily: "'Inter', sans-serif" }}>{isActive ? '▲ Less' : '▼ Details'}</span>
-      </div>
-
-      {isActive && (
-        <div style={{ borderTop: `1px solid ${stage.color}22`, background: '#f8fafd', padding: '16px 18px' }}>
-          <div style={{ marginBottom: '12px' }}>
-            <p style={detailLabel}>Signal</p>
-            <p style={detailText}>{stage.signal}</p>
-          </div>
-          <div style={{ marginBottom: '12px' }}>
-            <p style={detailLabel}>Recommended Action</p>
-            <p style={detailText}>{stage.action}</p>
-          </div>
-          <div style={{ marginBottom: '16px' }}>
-            <p style={detailLabel}>Key Metrics</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {stage.metrics.map((m, i) => (
-                <span key={i} style={{ background: stage.color + '12', color: stage.color, border: `1px solid ${stage.color}30`, borderRadius: '100px', padding: '3px 10px', fontSize: '11px', fontWeight: '600', fontFamily: "'Inter', sans-serif" }}>
-                  {m}
-                </span>
-              ))}
-            </div>
-          </div>
-          <button
-            onClick={e => { e.stopPropagation(); onMakeList() }}
-            disabled={listBuilding || listBuilt}
-            style={{
-              padding: '7px 16px', borderRadius: '7px',
-              background: listBuilt ? '#f0fff4' : listBuilding ? '#d1d9e6' : 'linear-gradient(135deg, #1d6fdb, #38bdf8)',
-              color: listBuilt ? '#16a34a' : 'white',
-              fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
-              cursor: listBuilding || listBuilt ? 'default' : 'pointer',
-              border: listBuilt ? '1px solid #c6f6d5' : 'none',
-            }}
-          >
-            {listBuilt ? '✓ Segment created' : listBuilding ? 'Building…' : '+ Make a List'}
-          </button>
+        <div style={{ marginBottom: '10px' }}>
+          <p style={detailLabel}>Signal</p>
+          <p style={detailText}>{stage.signal}</p>
         </div>
-      )}
+        <div style={{ marginBottom: '16px' }}>
+          <p style={detailLabel}>Recommended Action</p>
+          <p style={detailText}>{stage.action}</p>
+        </div>
+
+        <button
+          onClick={() => onMakeList()}
+          disabled={listBuilding || listBuilt}
+          style={{
+            padding: '7px 16px', borderRadius: '7px',
+            background: listBuilt ? '#f0fff4' : listBuilding ? '#d1d9e6' : 'linear-gradient(135deg, #1d6fdb, #38bdf8)',
+            color: listBuilt ? '#16a34a' : 'white',
+            fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
+            cursor: listBuilding || listBuilt ? 'default' : 'pointer',
+            border: listBuilt ? '1px solid #c6f6d5' : 'none',
+          }}
+        >
+          {listBuilt ? '✓ Segment created' : listBuilding ? 'Building…' : '+ Make a List'}
+        </button>
+      </div>
     </div>
   )
 }
@@ -225,7 +203,6 @@ const detailText  = { fontSize: '12px', color: '#374151', lineHeight: '1.6', mar
 // ─── Lifecycle tab (donor or ticket) ─────────────────────────────────────────
 
 function LifecycleTab({ stages, flowTitle }) {
-  const [activeStage, setActiveStage]   = useState(null)
   const [buildingList, setBuildingList] = useState(null)
   const [builtLists, setBuiltLists]     = useState({})
 
@@ -241,19 +218,12 @@ function LifecycleTab({ stages, flowTitle }) {
       <div style={s.flowCard}>
         <p style={s.flowTitle}>{flowTitle}</p>
         <FlowBar stages={stages} />
-        <p style={{ fontSize: '11px', color: '#9ca3af', fontFamily: "'Inter', sans-serif", margin: 0 }}>
-          Click any stage card below to see signals, recommended actions, and metrics. Use "Make a List" to build a segment for that stage.
-        </p>
       </div>
       <div style={s.grid}>
-        {stages.map((stage, i) => (
+        {stages.map((stage) => (
           <StageCard
             key={stage.key}
             stage={stage}
-            index={i}
-            total={stages.length}
-            isActive={activeStage === stage.key}
-            onClick={() => setActiveStage(activeStage === stage.key ? null : stage.key)}
             onMakeList={() => handleMakeList(stage.key)}
             listBuilding={buildingList === stage.key}
             listBuilt={!!builtLists[stage.key]}
@@ -267,7 +237,6 @@ function LifecycleTab({ stages, flowTitle }) {
 // ─── Membership tab ───────────────────────────────────────────────────────────
 
 function MembershipTab() {
-  const [expanded, setExpanded]         = useState(null)
   const [buildingList, setBuildingList] = useState(null)
   const [builtLists, setBuiltLists]     = useState({})
 
@@ -278,115 +247,79 @@ function MembershipTab() {
     setBuiltLists(prev => ({ ...prev, [key]: true }))
   }
 
-  const totalMembers = MEMBERSHIP_SEGMENTS.reduce((a, s) => a + Number(s.count.replace(/,/g, '')), 0)
-
   return (
     <div>
-      {/* Summary bar */}
+      {/* Summary bar — no counts */}
       <div style={s.flowCard}>
         <p style={s.flowTitle}>Membership Status Overview</p>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '14px' }}>
-          {MEMBERSHIP_SEGMENTS.map(seg => {
-            const pct = Math.round((Number(seg.count.replace(/,/g, '')) / totalMembers) * 100)
-            return (
-              <div key={seg.key} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
-                <span style={{ fontSize: '12px', fontWeight: '700', color: seg.color, fontFamily: "'Inter', sans-serif" }}>{seg.label}</span>
-                <span style={{ fontSize: '12px', color: '#9ca3af', fontFamily: "'Inter', sans-serif" }}>{seg.count} ({pct}%)</span>
-              </div>
-            )
-          })}
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '14px' }}>
+          {MEMBERSHIP_SEGMENTS.map(seg => (
+            <div key={seg.key} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
+              <span style={{ fontSize: '12px', fontWeight: '700', color: seg.color, fontFamily: "'Inter', sans-serif" }}>{seg.label}</span>
+            </div>
+          ))}
         </div>
-        {/* Bar chart */}
         <div style={{ display: 'flex', height: '8px', borderRadius: '6px', overflow: 'hidden', gap: '2px' }}>
-          {MEMBERSHIP_SEGMENTS.map(seg => {
-            const pct = Math.round((Number(seg.count.replace(/,/g, '')) / totalMembers) * 100)
-            return <div key={seg.key} style={{ width: `${pct}%`, background: seg.color, transition: 'width 0.3s' }} />
-          })}
+          {MEMBERSHIP_SEGMENTS.map(seg => (
+            <div key={seg.key} style={{ flex: 1, background: seg.color }} />
+          ))}
         </div>
-        <p style={{ fontSize: '11px', color: '#9ca3af', fontFamily: "'Inter', sans-serif", margin: '10px 0 0' }}>
-          Click a status card to see signals, recommended actions, and SQL. Use "Add to Segment" to build a list.
-        </p>
       </div>
 
-      {/* Status cards */}
+      {/* Status cards — always expanded, no counts */}
       <div style={s.grid}>
         {MEMBERSHIP_SEGMENTS.map(seg => {
-          const isExp = expanded === seg.key
           const isBuilding = buildingList === seg.key
-          const isBuilt = !!builtLists[seg.key]
+          const isBuilt    = !!builtLists[seg.key]
 
           return (
             <div
               key={seg.key}
-              onClick={() => setExpanded(isExp ? null : seg.key)}
               style={{
-                cursor: 'pointer', background: 'white', borderRadius: '12px',
-                border: `1px solid ${isExp ? seg.color + '60' : 'rgba(29,111,219,0.1)'}`,
-                boxShadow: isExp ? `0 4px 20px ${seg.color}22` : '0 2px 8px rgba(29,111,219,0.06)',
-                overflow: 'hidden', transition: 'box-shadow 0.15s, border-color 0.15s',
+                background: 'white', borderRadius: '12px',
+                border: `1px solid ${seg.color}30`,
+                boxShadow: `0 2px 12px ${seg.color}12`,
+                overflow: 'hidden',
               }}
             >
               <div style={{ padding: '16px 18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '22px' }}>{seg.icon}</span>
-                    <p style={{ fontSize: '15px', fontWeight: '700', color: seg.color, margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{seg.label}</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '22px', fontWeight: '800', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1 }}>{seg.count}</p>
-                    <p style={{ fontSize: '10px', color: '#9ca3af', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>members</p>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '22px' }}>{seg.icon}</span>
+                  <p style={{ fontSize: '15px', fontWeight: '700', color: seg.color, margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{seg.label}</p>
                 </div>
-                <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.55', margin: 0, fontFamily: "'Inter', sans-serif" }}>{seg.description}</p>
-              </div>
+                <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.55', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>{seg.description}</p>
 
-              <div style={{ padding: '6px 18px 10px', display: 'flex', justifyContent: 'flex-end' }}>
-                <span style={{ fontSize: '11px', color: '#9ca3af', fontFamily: "'Inter', sans-serif" }}>{isExp ? '▲ Less' : '▼ Details'}</span>
-              </div>
-
-              {isExp && (
-                <div style={{ borderTop: `1px solid ${seg.color}22`, background: '#f8fafd', padding: '16px 18px' }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    <p style={detailLabel}>Signal</p>
-                    <p style={detailText}>{seg.signal}</p>
-                  </div>
-                  <div style={{ marginBottom: '12px' }}>
-                    <p style={detailLabel}>Recommended Action</p>
-                    <p style={detailText}>{seg.action}</p>
-                  </div>
-                  <div style={{ marginBottom: '12px' }}>
-                    <p style={detailLabel}>Key Metrics</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-                      {seg.metrics.map((m, i) => (
-                        <span key={i} style={{ background: seg.color + '12', color: seg.color, border: `1px solid ${seg.color}30`, borderRadius: '100px', padding: '3px 10px', fontSize: '11px', fontWeight: '600', fontFamily: "'Inter', sans-serif" }}>
-                          {m}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div style={{ marginBottom: '16px' }}>
-                    <p style={detailLabel}>Generated SQL</p>
-                    <pre style={{ fontSize: '11px', color: '#374151', background: '#f0f4fa', borderRadius: '6px', padding: '10px 12px', margin: 0, overflowX: 'auto', fontFamily: "ui-monospace, 'Cascadia Code', monospace", lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                      {seg.sql}
-                    </pre>
-                  </div>
-                  <button
-                    onClick={e => { e.stopPropagation(); handleMakeList(seg.key) }}
-                    disabled={isBuilding || isBuilt}
-                    style={{
-                      padding: '7px 16px', borderRadius: '7px',
-                      background: isBuilt ? '#f0fff4' : isBuilding ? '#d1d9e6' : 'linear-gradient(135deg, #1d6fdb, #38bdf8)',
-                      color: isBuilt ? '#16a34a' : 'white',
-                      fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
-                      cursor: isBuilding || isBuilt ? 'default' : 'pointer',
-                      border: isBuilt ? '1px solid #c6f6d5' : 'none',
-                    }}
-                  >
-                    {isBuilt ? '✓ Segment created' : isBuilding ? 'Building…' : '+ Add to Segment'}
-                  </button>
+                <div style={{ marginBottom: '10px' }}>
+                  <p style={detailLabel}>Signal</p>
+                  <p style={detailText}>{seg.signal}</p>
                 </div>
-              )}
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={detailLabel}>Recommended Action</p>
+                  <p style={detailText}>{seg.action}</p>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <p style={detailLabel}>Generated SQL</p>
+                  <pre style={{ fontSize: '11px', color: '#374151', background: '#f0f4fa', borderRadius: '6px', padding: '10px 12px', margin: 0, overflowX: 'auto', fontFamily: "ui-monospace, 'Cascadia Code', monospace", lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {seg.sql}
+                  </pre>
+                </div>
+
+                <button
+                  onClick={() => handleMakeList(seg.key)}
+                  disabled={isBuilding || isBuilt}
+                  style={{
+                    padding: '7px 16px', borderRadius: '7px',
+                    background: isBuilt ? '#f0fff4' : isBuilding ? '#d1d9e6' : 'linear-gradient(135deg, #1d6fdb, #38bdf8)',
+                    color: isBuilt ? '#16a34a' : 'white',
+                    fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
+                    cursor: isBuilding || isBuilt ? 'default' : 'pointer',
+                    border: isBuilt ? '1px solid #c6f6d5' : 'none',
+                  }}
+                >
+                  {isBuilt ? '✓ Segment created' : isBuilding ? 'Building…' : '+ Add to Segment'}
+                </button>
+              </div>
             </div>
           )
         })}
@@ -397,17 +330,19 @@ function MembershipTab() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-function Lifecycles() {
+function Lifecycles({ embedded }) {
   const [activeTab, setActiveTab] = useState('donor')
 
   return (
     <div>
-      <div style={s.header}>
-        <h1 style={s.title}>Lifecycles</h1>
-        <p style={s.subtitle}>
-          Understand where your constituents sit in their journey — and what actions to take at each stage.
-        </p>
-      </div>
+      {!embedded && (
+        <div style={s.header}>
+          <h1 style={s.title}>Lifecycles</h1>
+          <p style={s.subtitle}>
+            Understand where your constituents sit in their journey — and what actions to take at each stage.
+          </p>
+        </div>
+      )}
 
       <div style={s.tabBar}>
         {[

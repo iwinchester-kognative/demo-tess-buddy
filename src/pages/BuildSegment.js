@@ -1591,4 +1591,5 @@ const styles = {
   contentsTd: { padding: '6px 12px', verticalAlign: 'middle', color: '#333' }
 }
 
+export { QuickToolsTab, PromoCodeTool, SourceCodeTool, PromoteToSourceTool }
 export default BuildSegment

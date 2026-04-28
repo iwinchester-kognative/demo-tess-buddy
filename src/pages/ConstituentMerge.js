@@ -831,6 +831,11 @@ function ConstituentMerge({ orgData }) {
             )}
           </div>
 
+          {/* ── Schedule Auto-Merge ── */}
+          <div style={{ marginTop: '24px' }}>
+            <ScheduleAutoMergeTool />
+          </div>
+
         </>
       )}
 
@@ -933,6 +938,131 @@ function ConstituentMerge({ orgData }) {
   )
 }
 
+// ─── Schedule Auto-Merge tool (exported for homescreen Quick Tools) ───────────
+
+const qs = {
+  card:       { background: 'white', borderRadius: '12px', border: '1px solid rgba(29,111,219,0.1)', boxShadow: '0 2px 8px rgba(29,111,219,0.06)', overflow: 'hidden' },
+  head:       { padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  body:       { borderTop: '1px solid rgba(29,111,219,0.08)', padding: '14px 18px 18px' },
+  fieldGroup: { marginBottom: '12px' },
+  label:      { display: 'block', fontSize: '11px', fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '5px', fontFamily: "'Inter', sans-serif" },
+  input:      { width: '100%', boxSizing: 'border-box', padding: '8px 12px', border: '1px solid rgba(29,111,219,0.18)', borderRadius: '7px', fontSize: '13px', fontFamily: "'Inter', sans-serif", outline: 'none' },
+  btn:        { padding: '9px 16px', background: 'linear-gradient(135deg, #1d6fdb, #38bdf8)', color: 'white', border: 'none', borderRadius: '7px', fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' },
+}
+
+const MERGE_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+const MERGE_TIME_OPTS = [
+  { value: '2am',  label: '2:00 AM — Before business hours' },
+  { value: '11pm', label: '11:00 PM — End of day' },
+]
+
+function ScheduleAutoMergeTool({ active, onToggle }) {
+  const [selectedDay, setSelectedDay]   = useState('Sunday')
+  const [selectedTime, setSelectedTime] = useState('2am')
+  const [scheduled, setScheduled]       = useState(null)
+  const [saving, setSaving]             = useState(false)
+
+  const accordionMode = typeof onToggle === 'function'
+  const showBody      = accordionMode ? active : true
+  const timeLabel     = MERGE_TIME_OPTS.find(t => t.value === selectedTime)?.label.split('—')[0].trim() || '2:00 AM'
+
+  const handleSave = async () => {
+    setSaving(true)
+    await new Promise(r => setTimeout(r, 900))
+    setSaving(false)
+    setScheduled({ day: selectedDay, time: selectedTime })
+  }
+
+  const handleCancelSchedule = async () => {
+    setSaving(true)
+    await new Promise(r => setTimeout(r, 600))
+    setSaving(false)
+    setScheduled(null)
+  }
+
+  return (
+    <div style={qs.card}>
+      <div
+        style={{ ...qs.head, cursor: accordionMode ? 'pointer' : 'default' }}
+        onClick={accordionMode ? onToggle : undefined}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '20px', lineHeight: 1 }}>🗓️</span>
+          <div>
+            <p style={{ fontSize: '13px', fontWeight: '700', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>Schedule Auto-Merge</p>
+            <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>
+              {scheduled ? `⚡ ${scheduled.day}s · ${timeLabel}` : 'Auto-run bulk merge on a chosen day each week'}
+            </p>
+          </div>
+        </div>
+        {accordionMode && <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>}
+      </div>
+
+      {showBody && (
+        <div style={qs.body}>
+          {scheduled ? (
+            <>
+              <div style={{ background: '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', padding: '12px 14px', marginBottom: '14px' }}>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#16a34a', fontFamily: "'Inter', sans-serif" }}>✓ Auto-merge scheduled</p>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#4b5563', fontFamily: "'Inter', sans-serif" }}>
+                  Runs every <strong>{scheduled.day}</strong> at <strong>{timeLabel}</strong> in the background. Results appear in Recent Merges.
+                </p>
+              </div>
+              <button
+                onClick={handleCancelSchedule}
+                disabled={saving}
+                style={{ ...qs.btn, background: '#fee2e2', color: '#dc2626', width: '100%', opacity: saving ? 0.6 : 1, cursor: saving ? 'not-allowed' : 'pointer' }}
+              >
+                {saving ? 'Cancelling…' : 'Cancel Schedule'}
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={qs.fieldGroup}>
+                <label style={qs.label}>Day of week</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {MERGE_DAYS.map(day => (
+                    <button
+                      key={day}
+                      onClick={() => setSelectedDay(day)}
+                      style={{
+                        padding: '5px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',
+                        fontFamily: "'Inter', sans-serif", cursor: 'pointer',
+                        background: selectedDay === day ? '#1d6fdb' : '#f0f7ff',
+                        color: selectedDay === day ? 'white' : '#4b5563',
+                        border: selectedDay === day ? 'none' : '1px solid rgba(29,111,219,0.15)',
+                      }}
+                    >
+                      {day.slice(0, 3)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ ...qs.fieldGroup, marginBottom: '14px' }}>
+                <label style={qs.label}>Run time</label>
+                <select
+                  value={selectedTime}
+                  onChange={e => setSelectedTime(e.target.value)}
+                  style={{ ...qs.input, background: 'white' }}
+                >
+                  {MERGE_TIME_OPTS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                style={{ ...qs.btn, width: '100%', opacity: saving ? 0.6 : 1, cursor: saving ? 'not-allowed' : 'pointer' }}
+              >
+                {saving ? 'Saving…' : 'Set Schedule'}
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const styles = {
   container: { padding: '40px' },
   title: { fontSize: '22px', fontWeight: '700', color: '#0c1a33', marginBottom: '8px', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em' },
@@ -1005,4 +1135,5 @@ const styles = {
 }
  
 
+export { ScheduleAutoMergeTool }
 export default ConstituentMerge

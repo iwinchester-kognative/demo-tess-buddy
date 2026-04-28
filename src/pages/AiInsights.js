@@ -205,7 +205,7 @@ const SUGGESTIONS = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-function AiInsights() {
+function AiInsights({ embedded }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -244,10 +244,12 @@ function AiInsights() {
 
   return (
     <div>
-      <div style={s.header}>
-        <h1 style={s.title}>AI Insights</h1>
-        <p style={s.subtitle}>Ask anything about your season performance, donor trends, or sales figures — in plain English.</p>
-      </div>
+      {!embedded && (
+        <div style={s.header}>
+          <h1 style={s.title}>Insights</h1>
+          <p style={s.subtitle}>Ask anything about your season performance, donor trends, or sales figures — in plain English.</p>
+        </div>
+      )}
 
       <div style={s.panel}>
         <div style={s.chatWrapper}>

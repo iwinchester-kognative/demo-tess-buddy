@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import ConstituentMerge from './ConstituentMerge'
+import ConstituentMerge, { ScheduleAutoMergeTool } from './ConstituentMerge'
 import AgedRecordRemoval from './AgedRecordRemoval'
 import Screening from './Screening'
-import BuildSegment from './BuildSegment'
-import Dashboards from './Dashboards'
-import AiInsights from './AiInsights'
+import BuildSegment, { PromoCodeTool, SourceCodeTool, PromoteToSourceTool } from './BuildSegment'
 import WealthScreening from './WealthScreening'
-import Lifecycles from './Lifecycles'
+import InsightsHub from './InsightsHub'
+
+function HomeQuickTools() {
+  const [activeTool, setActiveTool] = useState(null)
+  const [lastSourceCode, setLastSourceCode] = useState(null)
+  const toggle = (name) => setActiveTool(prev => prev === name ? null : name)
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px' }}>
+      <PromoCodeTool       active={activeTool === 'promo'}    onToggle={() => toggle('promo')} />
+      <SourceCodeTool      active={activeTool === 'source'}   onToggle={() => toggle('source')}   onCreated={code => setLastSourceCode(code)} />
+      <PromoteToSourceTool active={activeTool === 'promote'}  onToggle={() => toggle('promote')}  defaultSourceCode={lastSourceCode} />
+      <ScheduleAutoMergeTool active={activeTool === 'schedule'} onToggle={() => toggle('schedule')} />
+    </div>
+  )
+}
 
 function Dashboard({ session, orgData }) {
   const [apiStatus, setApiStatus] = useState('checking')
@@ -85,9 +97,7 @@ function Dashboard({ session, orgData }) {
           <div style={styles.navGroup}>
             <span style={styles.navChip}>AI Segmentation & Analysis</span>
             <button style={activePage === 'buildSegment' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('buildSegment')}>Segments</button>
-            <button style={activePage === 'lifecycles' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('lifecycles')}>Lifecycles</button>
-            <button style={activePage === 'dashboards' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('dashboards')}>Dashboards</button>
-            <button style={activePage === 'aiInsights' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('aiInsights')}>AI Insights</button>
+            <button style={activePage === 'insights' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('insights')}>Insights</button>
           </div>
         </nav>
         <div style={styles.statusRow}>
@@ -180,6 +190,14 @@ function Dashboard({ session, orgData }) {
 
               </div>
             </div>
+
+            {/* ── Quick Tools ── */}
+            <div style={styles.section}>
+              <p style={styles.sectionChip}>Quick Tools</p>
+              <div style={{ maxWidth: '960px' }}>
+                <HomeQuickTools />
+              </div>
+            </div>
           </>
         )}
         {activePage === 'constituentMerge' && (
@@ -194,17 +212,11 @@ function Dashboard({ session, orgData }) {
         {activePage === 'wealthScreening' && (
           <WealthScreening />
         )}
-        {activePage === 'lifecycles' && (
-          <Lifecycles />
-        )}
         {activePage === 'buildSegment' && (
           <BuildSegment orgData={orgData} />
         )}
-        {activePage === 'dashboards' && (
-          <Dashboards />
-        )}
-        {activePage === 'aiInsights' && (
-          <AiInsights />
+        {activePage === 'insights' && (
+          <InsightsHub />
         )}
       </div>
     </div>
