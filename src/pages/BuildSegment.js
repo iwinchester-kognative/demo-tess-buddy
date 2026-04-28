@@ -961,11 +961,7 @@ function SuggestedTab() {
                   <pre style={{ fontSize:'11px', color:'#374151', background:'#f0f4fa', borderRadius:'6px', padding:'10px 12px', margin:0, overflowX:'auto', fontFamily:"ui-monospace, 'Cascadia Code', monospace", lineHeight:'1.6', whiteSpace:'pre-wrap', wordBreak:'break-word' }}>{seg.sql}</pre>
                 </div>
               )}
-              <div style={{ padding:'10px 18px 14px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <div style={{ display:'flex', gap:'12px' }}>
-                  <span style={{ fontSize:'11px', color:'#9ca3af', fontFamily:"'Inter', sans-serif" }}>~<strong style={{ color:'#374151' }}>{seg.est}</strong> records</span>
-                  <span style={{ fontSize:'11px', fontFamily:"'Inter', sans-serif", color: seg.confidence === 'High' ? '#16a34a' : '#d97706' }}>● {seg.confidence} confidence</span>
-                </div>
+              <div style={{ padding:'10px 18px 14px', display:'flex', alignItems:'center', justifyContent:'flex-end' }}>
                 {isDone ? (
                   <span style={{ fontSize:'12px', fontWeight:'600', color:'#16a34a', fontFamily:"'Inter', sans-serif" }}>✓ Segment created</span>
                 ) : (
