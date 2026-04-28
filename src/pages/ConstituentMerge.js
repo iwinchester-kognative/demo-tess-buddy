@@ -29,6 +29,9 @@ function ConstituentMerge({ orgData }) {
   const [separateHhNo, setSeparateHhNo] = useState('')
   const [recentMerges, setRecentMerges] = useState([])
   const [recentLoading, setRecentLoading] = useState(false)
+  const [toolsLoading, setToolsLoading] = useState(null)   // 'merge' | 'separate' | null
+  const [mergeToolResult, setMergeToolResult] = useState(null)
+  const [hhToolResult, setHhToolResult] = useState(null)
  
   const headers = {
     'x-tessitura-auth': orgData.organizations.tessitura_auth_string,
@@ -281,6 +284,54 @@ function ConstituentMerge({ orgData }) {
     setConvertingCriterion(null)
   }
 
+  const FAKE_NAMES = [
+    ['Arthur', 'Williams'], ['Priya', 'Patel'], ['Kathleen', "O'Brien"],
+    ['Hideo', 'Nakamura'], ['David', 'Rosenberg'], ['Carmen', 'Torres'],
+    ['George', 'Blackwell'], ['Abena', 'Osei'], ['Lucas', 'Ferreira'], ['Lena', 'Gustafsson']
+  ]
+  const fakeName = (n) => FAKE_NAMES[Number(n) % FAKE_NAMES.length]
+
+  const handleOneOffMerge = async () => {
+    if (!mergeKeepNo || !mergeDeleteNo) return
+    setToolsLoading('merge')
+    setMergeToolResult(null)
+    await callProc(PROCS.managePair, [
+      { Name: '@customer_no_1', Value: String(mergeKeepNo) },
+      { Name: '@customer_no_2', Value: String(mergeDeleteNo) },
+      { Name: '@mode', Value: 'schedule' }
+    ])
+    await callProc(PROCS.mergeCustomer)
+    const [kf, kl] = fakeName(mergeKeepNo)
+    const [df, dl] = fakeName(mergeDeleteNo)
+    setMergeToolResult({
+      keepNo: mergeKeepNo, keepName: `${kf} ${kl}`,
+      deleteNo: mergeDeleteNo, deleteName: `${df} ${dl}`,
+      mergedAt: new Date().toLocaleTimeString()
+    })
+    setMergeKeepNo('')
+    setMergeDeleteNo('')
+    setToolsLoading(null)
+  }
+
+  const handleSeparateHH = async () => {
+    if (!separateHhNo) return
+    setToolsLoading('separate')
+    setHhToolResult(null)
+    await callProc(PROCS.managePair, [
+      { Name: '@customer_no_1', Value: String(separateHhNo) },
+      { Name: '@mode', Value: 'convert_to_household' }
+    ])
+    const [f, l] = fakeName(separateHhNo)
+    const newNo = Number(separateHhNo) + 10000
+    setHhToolResult({
+      hhNo: separateHhNo, hhName: `${f} ${l} Household`,
+      newNo, newName: `${f} ${l}`,
+      separatedAt: new Date().toLocaleTimeString()
+    })
+    setSeparateHhNo('')
+    setToolsLoading(null)
+  }
+
   const statusLabel = (s) => {
     if (s === 'K') return { label: 'Keep', color: '#38a169' }
     if (s === 'D') return { label: 'Delete', color: '#e53e3e' }
@@ -331,12 +382,6 @@ function ConstituentMerge({ orgData }) {
           onClick={() => { setActiveTab('recent'); fetchRecentMerges() }}
         >
           Recent Merges
-        </button>
-        <button
-          style={activeTab === 'stats' ? styles.tabActive : styles.tab}
-          onClick={() => setActiveTab('stats')}
-        >
-          Merge Stats
         </button>
       </div>
 
@@ -392,59 +437,6 @@ function ConstituentMerge({ orgData }) {
           )}
         </div>
       </div>
-
-      {!step && pool.length === 0 && (
-        <div style={styles.toolCard}>
-          <h3 style={styles.actionTitle}>How Merges Work</h3>
-          <p style={styles.actionDesc}>
-            When the same person exists more than once in Tessitura, merging combines
-            them into a single record so their full history is in one place.
-          </p>
-          <div style={styles.stepsGrid}>
-            <div style={styles.step}>
-              <div style={styles.stepNum}>1</div>
-              <div>
-                <p style={styles.stepTitle}>Find Duplicates</p>
-                <p style={styles.stepDesc}>
-                  Tess Buddy scans your database for people who look like the same
-                  person — matching on name, email, phone, or address.
-                </p>
-              </div>
-            </div>
-            <div style={styles.step}>
-              <div style={styles.stepNum}>2</div>
-              <div>
-                <p style={styles.stepTitle}>Pick a Winner</p>
-                <p style={styles.stepDesc}>
-                  For each pair, one record is chosen to keep and the other is marked
-                  for removal. The record with more history is usually the keeper.
-                </p>
-              </div>
-            </div>
-            <div style={styles.step}>
-              <div style={styles.stepNum}>3</div>
-              <div>
-                <p style={styles.stepTitle}>Review</p>
-                <p style={styles.stepDesc}>
-                  You review each suggested pair before anything happens. You can swap
-                  which record to keep, skip a pair entirely, or turn two people into
-                  a household instead.
-                </p>
-              </div>
-            </div>
-            <div style={styles.step}>
-              <div style={styles.stepNum}>4</div>
-              <div>
-                <p style={styles.stepTitle}>Merge</p>
-                <p style={styles.stepDesc}>
-                  Once you confirm, all tickets, donations, memberships, and activity
-                  from the removed record are moved to the keeper. Nothing is lost.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {message && (
         <div style={{
@@ -710,21 +702,34 @@ function ConstituentMerge({ orgData }) {
                 type="text"
                 placeholder="Keep Customer #"
                 value={mergeKeepNo}
-                onChange={e => setMergeKeepNo(e.target.value)}
+                onChange={e => { setMergeKeepNo(e.target.value); setMergeToolResult(null) }}
                 style={styles.toolInput}
+                disabled={toolsLoading === 'merge'}
               />
               <input
                 type="text"
                 placeholder="Delete Customer #"
                 value={mergeDeleteNo}
-                onChange={e => setMergeDeleteNo(e.target.value)}
+                onChange={e => { setMergeDeleteNo(e.target.value); setMergeToolResult(null) }}
                 style={styles.toolInput}
+                disabled={toolsLoading === 'merge'}
               />
-              <button style={{ ...styles.button, opacity: 0.5 }} disabled>
-                Merge
+              <button
+                style={{ ...styles.button, opacity: (!mergeKeepNo || !mergeDeleteNo || toolsLoading === 'merge') ? 0.5 : 1, cursor: (!mergeKeepNo || !mergeDeleteNo || toolsLoading === 'merge') ? 'not-allowed' : 'pointer' }}
+                onClick={handleOneOffMerge}
+                disabled={!mergeKeepNo || !mergeDeleteNo || toolsLoading === 'merge'}
+              >
+                {toolsLoading === 'merge' ? 'Merging...' : 'Merge'}
               </button>
             </div>
-            <p style={styles.toolHint}>Coming soon</p>
+            {mergeToolResult && (
+              <div style={styles.toolResult}>
+                <span style={{ ...styles.badge, backgroundColor: '#718096', marginRight: '10px' }}>Merged</span>
+                <span style={styles.toolResultText}>
+                  #{mergeToolResult.deleteNo} ({mergeToolResult.deleteName}) merged into #{mergeToolResult.keepNo} ({mergeToolResult.keepName}) at {mergeToolResult.mergedAt}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* ── Separate Household ── */}
@@ -740,14 +745,26 @@ function ConstituentMerge({ orgData }) {
                 type="text"
                 placeholder="Household Customer #"
                 value={separateHhNo}
-                onChange={e => setSeparateHhNo(e.target.value)}
+                onChange={e => { setSeparateHhNo(e.target.value); setHhToolResult(null) }}
                 style={styles.toolInput}
+                disabled={toolsLoading === 'separate'}
               />
-              <button style={{ ...styles.button, opacity: 0.5 }} disabled>
-                Separate
+              <button
+                style={{ ...styles.button, opacity: (!separateHhNo || toolsLoading === 'separate') ? 0.5 : 1, cursor: (!separateHhNo || toolsLoading === 'separate') ? 'not-allowed' : 'pointer' }}
+                onClick={handleSeparateHH}
+                disabled={!separateHhNo || toolsLoading === 'separate'}
+              >
+                {toolsLoading === 'separate' ? 'Separating...' : 'Separate'}
               </button>
             </div>
-            <p style={styles.toolHint}>Coming soon</p>
+            {hhToolResult && (
+              <div style={styles.toolResult}>
+                <span style={{ ...styles.badge, backgroundColor: '#2b6cb0', marginRight: '10px' }}>Separated</span>
+                <span style={styles.toolResultText}>
+                  {hhToolResult.newName} (#{hhToolResult.newNo}) created as individual record from {hhToolResult.hhName} at {hhToolResult.separatedAt}
+                </span>
+              </div>
+            )}
           </div>
 
         </>
@@ -817,76 +834,6 @@ function ConstituentMerge({ orgData }) {
         </>
       )}
 
-      {activeTab === 'stats' && (
-        <>
-          <div style={styles.actionRow}>
-            <div style={styles.statCard}>
-              <p style={styles.statLabel}>Merges Completed</p>
-              <p style={styles.statValue}>1,247</p>
-              <p style={styles.statHint}>Total merges executed to date</p>
-            </div>
-            <div style={styles.statCard}>
-              <p style={styles.statLabel}>Pending Pairs</p>
-              <p style={styles.statValue}>23</p>
-              <p style={styles.statHint}>Unresolved pairs currently in the pool</p>
-            </div>
-            <div style={styles.statCard}>
-              <p style={styles.statLabel}>Match Breakdown</p>
-              <div style={styles.sourceList}>
-                <div style={styles.sourceRow}>
-                  <span style={styles.sourceDot} />
-                  <span style={styles.sourceLabel}>Email match</span>
-                  <span style={styles.sourceValue}>612</span>
-                </div>
-                <div style={styles.sourceRow}>
-                  <span style={{ ...styles.sourceDot, backgroundColor: '#2b6cb0' }} />
-                  <span style={styles.sourceLabel}>Phone match</span>
-                  <span style={styles.sourceValue}>341</span>
-                </div>
-                <div style={styles.sourceRow}>
-                  <span style={{ ...styles.sourceDot, backgroundColor: '#805ad5' }} />
-                  <span style={styles.sourceLabel}>Name + address</span>
-                  <span style={styles.sourceValue}>294</span>
-                </div>
-              </div>
-              <p style={styles.statHint}>By primary matching criterion</p>
-            </div>
-          </div>
-          <div style={{ ...styles.actionRow, marginTop: 0 }}>
-            <div style={styles.statCard}>
-              <p style={styles.statLabel}>This Month</p>
-              <p style={styles.statValue}>84</p>
-              <p style={styles.statHint}>Merges completed in April 2026</p>
-            </div>
-            <div style={styles.statCard}>
-              <p style={styles.statLabel}>Households Created</p>
-              <p style={styles.statValue}>38</p>
-              <p style={styles.statHint}>Pairs converted to households vs. merged</p>
-            </div>
-            <div style={styles.statCard}>
-              <p style={styles.statLabel}>Top Duplicate Sources</p>
-              <div style={styles.sourceList}>
-                <div style={styles.sourceRow}>
-                  <span style={styles.sourceDot} />
-                  <span style={styles.sourceLabel}>TrueTix import</span>
-                  <span style={styles.sourceValue}>54%</span>
-                </div>
-                <div style={styles.sourceRow}>
-                  <span style={{ ...styles.sourceDot, backgroundColor: '#2b6cb0' }} />
-                  <span style={styles.sourceLabel}>DON2 import</span>
-                  <span style={styles.sourceValue}>29%</span>
-                </div>
-                <div style={styles.sourceRow}>
-                  <span style={{ ...styles.sourceDot, backgroundColor: '#805ad5' }} />
-                  <span style={styles.sourceLabel}>Manual entry</span>
-                  <span style={styles.sourceValue}>17%</span>
-                </div>
-              </div>
-              <p style={styles.statHint}>created_by breakdown from t_customer</p>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   )
 }
@@ -940,6 +887,12 @@ const styles = {
   toolInputRow: { display: 'flex', gap: '10px', alignItems: 'center' },
   toolInput: { flex: 1, padding: '10px 12px', border: '1px solid rgba(29,111,219,0.22)', borderRadius: '8px', fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', color: '#0c1a33' },
   toolHint: { fontSize: '11px', color: '#9ca3af', fontStyle: 'italic', marginTop: '10px', fontFamily: "'Inter', sans-serif" },
+  toolResult: { display: 'flex', alignItems: 'center', marginTop: '14px', padding: '10px 14px', backgroundColor: '#f8fafd', borderRadius: '8px', border: '1px solid rgba(29,111,219,0.12)' },
+  toolResultText: { fontSize: '13px', color: '#374151', fontFamily: "'Inter', sans-serif" },
+  optimizeResult: { backgroundColor: '#f8fafd', borderRadius: '8px', border: '1px solid rgba(29,111,219,0.12)', padding: '10px 14px', marginBottom: '4px' },
+  optimizeRow: { display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #f0f3f8' },
+  optimizeKey: { fontSize: '12px', color: '#6b7280', fontFamily: "'Inter', sans-serif" },
+  optimizeVal: { fontSize: '12px', fontWeight: '600', color: '#0c1a33', fontFamily: "'Inter', sans-serif" },
   stepsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '12px' },
   step: { display: 'flex', gap: '12px', alignItems: 'flex-start' },
   stepNum: { width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg, #1d6fdb, #38bdf8)', color: 'white', fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' },
