@@ -12,13 +12,14 @@ function NavItem({ icon, label, active, onClick }) {
     <button onClick={onClick} style={{
       display: 'flex', alignItems: 'center', gap: '9px',
       width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer',
-      padding: '7px 10px', borderRadius: '8px', marginBottom: '1px',
+      padding: '10px 10px', borderRadius: '8px', marginBottom: '1px',
+      minHeight: '44px',
       background: active ? 'rgba(29,111,219,0.09)' : 'transparent',
       color: active ? '#1d6fdb' : '#4b5563',
       fontSize: '13px', fontWeight: active ? '600' : '400',
       fontFamily: "'Inter', sans-serif",
     }}>
-      <span style={{ fontSize: '15px', width: '20px', textAlign: 'center', flexShrink: 0, lineHeight: 1, opacity: active ? 1 : 0.7 }}>{icon}</span>
+      <span style={{ fontSize: '16px', width: '22px', textAlign: 'center', flexShrink: 0, lineHeight: 1, opacity: active ? 1 : 0.7 }}>{icon}</span>
       {label}
     </button>
   )
@@ -47,6 +48,14 @@ function Dashboard({ session, orgData }) {
   const [optimizing, setOptimizing] = useState(false)
   const [optimizeResult, setOptimizeResult] = useState(null)
   const [credits, setCredits] = useState(47)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   const addCredits = (n = 1) => setCredits(prev => Math.min(prev + n, CREDIT_LIMIT))
 
@@ -60,6 +69,11 @@ function Dashboard({ session, orgData }) {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
+  }
+
+  const navigateTo = (page) => {
+    setActivePage(page)
+    if (isMobile) setSidebarOpen(false)
   }
 
   useEffect(() => {
@@ -98,26 +112,54 @@ function Dashboard({ session, orgData }) {
 
   const status = statusConfig[apiStatus]
 
+  const pageLabels = {
+    dashboard: 'Home',
+    constituentMerge: 'Constituent Merge',
+    agedRecordRemoval: 'Aged Record Removal',
+    screening: 'Contact Screening',
+    wealthScreening: 'Wealth Screening',
+    buildSegment: 'Segments',
+    insights: 'Insights',
+  }
+
+  const sidebarStyle = isMobile ? {
+    ...styles.sidebar,
+    position: 'fixed',
+    top: 0,
+    left: sidebarOpen ? 0 : '-240px',
+    height: '100%',
+    zIndex: 1000,
+    transition: 'left 0.25s ease',
+    boxShadow: sidebarOpen ? '4px 0 24px rgba(0,0,0,0.15)' : 'none',
+    width: '240px',
+  } : styles.sidebar
+
   return (
     <div style={styles.container}>
-      <div style={styles.sidebar}>
-        <div style={styles.logoBlock} onClick={() => setActivePage('dashboard')}>
-          <div style={styles.logoMark}>TB</div>
-          <span style={styles.logoBrandName}>Tess Buddy</span>
-        </div>
+
+      {/* Mobile overlay backdrop */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={styles.overlay}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div style={sidebarStyle}>
         <p style={styles.orgName}>{orgData.organizations.org_name}</p>
 
         <nav style={{ flex: 1 }}>
-          <NavItem icon="⊞" label="Home"                 active={activePage === 'dashboard'}        onClick={() => setActivePage('dashboard')} />
+          <NavItem icon="⊞" label="Home"                 active={activePage === 'dashboard'}        onClick={() => navigateTo('dashboard')} />
           <div style={styles.navSep} />
-          <NavItem icon="🔀" label="Constituent Merge"   active={activePage === 'constituentMerge'} onClick={() => setActivePage('constituentMerge')} />
-          <NavItem icon="🗂️" label="Aged Record Removal" active={activePage === 'agedRecordRemoval'} onClick={() => setActivePage('agedRecordRemoval')} />
+          <NavItem icon="🔀" label="Constituent Merge"   active={activePage === 'constituentMerge'} onClick={() => navigateTo('constituentMerge')} />
+          <NavItem icon="🗂️" label="Aged Record Removal" active={activePage === 'agedRecordRemoval'} onClick={() => navigateTo('agedRecordRemoval')} />
           <div style={styles.navSep} />
-          <NavItem icon="✉️" label="Contact Screening"   active={activePage === 'screening'}        onClick={() => setActivePage('screening')} />
-          <NavItem icon="💎" label="Wealth Screening"    active={activePage === 'wealthScreening'}  onClick={() => setActivePage('wealthScreening')} />
+          <NavItem icon="✉️" label="Contact Screening"   active={activePage === 'screening'}        onClick={() => navigateTo('screening')} />
+          <NavItem icon="💎" label="Wealth Screening"    active={activePage === 'wealthScreening'}  onClick={() => navigateTo('wealthScreening')} />
           <div style={styles.navSep} />
-          <NavItem icon="🎯" label="Segments"            active={activePage === 'buildSegment'}     onClick={() => setActivePage('buildSegment')} />
-          <NavItem icon="💡" label="Insights"            active={activePage === 'insights'}         onClick={() => setActivePage('insights')} />
+          <NavItem icon="🎯" label="Segments"            active={activePage === 'buildSegment'}     onClick={() => navigateTo('buildSegment')} />
+          <NavItem icon="💡" label="Insights"            active={activePage === 'insights'}         onClick={() => navigateTo('insights')} />
         </nav>
 
         <div style={styles.sidebarFooter}>
@@ -148,30 +190,44 @@ function Dashboard({ session, orgData }) {
           </div>
         </div>
       </div>
-      <div style={styles.main}>
-        <div style={styles.demoBanner}>
+
+      {/* Main content */}
+      <div style={{ ...styles.main, padding: isMobile ? '16px' : '48px' }}>
+
+        {/* Mobile top bar */}
+        {isMobile && (
+          <div style={styles.mobileTopBar}>
+            <button style={styles.hamburger} onClick={() => setSidebarOpen(o => !o)} aria-label="Open menu">
+              <span style={styles.hamburgerLine} />
+              <span style={styles.hamburgerLine} />
+              <span style={styles.hamburgerLine} />
+            </button>
+            <span style={styles.mobilePageTitle}>{pageLabels[activePage] || 'Tess Buddy'}</span>
+          </div>
+        )}
+
+        <div style={{ ...styles.demoBanner, marginTop: isMobile ? '12px' : '0' }}>
           🎭 Have you ever wanted to click random buttons in Tessitura without the fear of breaking something? Well, go crazy! This is a testing environment.
         </div>
+
         {activePage === 'dashboard' && (
           <>
             <div style={styles.header}>
-              <h1 style={styles.welcome}>Welcome back, {orgData.display_name}</h1>
+              <h1 style={{ ...styles.welcome, fontSize: isMobile ? '22px' : '26px' }}>Welcome back, {orgData.display_name}</h1>
               <p style={styles.role}>{orgData.role}</p>
             </div>
 
             {/* ── Record Cleaning ── */}
             <div style={styles.section}>
               <p style={styles.sectionChip}>Record Cleaning</p>
-              <div style={styles.cardRow}>
+              <div style={{ ...styles.cardRow, flexDirection: isMobile ? 'column' : 'row' }}>
 
-                {/* Merges Completed */}
                 <div style={styles.statCard}>
                   <p style={styles.statLabel}>Merges Completed</p>
                   <p style={styles.statValue}>1,247</p>
                   <p style={styles.statHint}>Total constituent merges executed to date</p>
                 </div>
 
-                {/* Top Duplicate Sources */}
                 <div style={styles.statCard}>
                   <p style={styles.statLabel}>Top Duplicate Sources</p>
                   <div style={styles.sourceList}>
@@ -194,14 +250,12 @@ function Dashboard({ session, orgData }) {
                   <p style={styles.statHint}>created_by breakdown from t_customer</p>
                 </div>
 
-                {/* Aged Records Removed */}
                 <div style={styles.statCard}>
                   <p style={styles.statLabel}>Aged Records Removed</p>
                   <p style={styles.statValue}>4,218</p>
                   <p style={styles.statHint}>Inactive constituents removed to date</p>
                 </div>
 
-                {/* Optimize Integrations */}
                 <div style={{ ...styles.statCard, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
                     <p style={styles.statLabel}>Optimize Integrations</p>
@@ -263,10 +317,8 @@ function Dashboard({ session, orgData }) {
 
 const styles = {
   container: { display: 'flex', height: '100vh', background: '#f0f7ff' },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 999 },
   sidebar: { width: '220px', backgroundColor: 'white', borderRight: '1px solid rgba(29,111,219,0.1)', padding: '20px 12px', display: 'flex', flexDirection: 'column', flexShrink: 0, boxShadow: '2px 0 16px rgba(29,111,219,0.05)' },
-  logoBlock: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', textDecoration: 'none' },
-  logoMark: { width: '32px', height: '32px', background: 'linear-gradient(135deg, #1d6fdb, #38bdf8)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Space Grotesk', sans-serif", fontWeight: '700', fontSize: '14px', color: '#fff', flexShrink: 0 },
-  logoBrandName: { fontFamily: "'Space Grotesk', sans-serif", fontSize: '17px', fontWeight: '600', color: '#0c1a33', letterSpacing: '-0.3px' },
   logo: { color: '#0c1a33', fontSize: '20px', fontWeight: '700', margin: 0 },
   orgName: { color: '#b0bac5', fontSize: '11px', fontWeight: '500', letterSpacing: '0.3px', paddingLeft: '10px', marginBottom: '16px', fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   navSep: { height: '1px', background: 'rgba(29,111,219,0.07)', margin: '6px 4px' },
@@ -275,8 +327,12 @@ const styles = {
   statusDot: { width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0 },
   statusLabel: { fontSize: '11px', fontWeight: '500', fontFamily: "'Inter', sans-serif" },
   logoutInline: { background: 'none', border: 'none', color: '#9ca3af', fontSize: '11px', fontFamily: "'Inter', sans-serif", cursor: 'pointer', padding: '2px 4px', borderRadius: '4px', flexShrink: 0 },
+  mobileTopBar: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' },
+  hamburger: { background: 'none', border: 'none', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px', borderRadius: '8px', flexShrink: 0 },
+  hamburgerLine: { display: 'block', width: '22px', height: '2px', background: '#0c1a33', borderRadius: '2px' },
+  mobilePageTitle: { fontFamily: "'Space Grotesk', sans-serif", fontSize: '17px', fontWeight: '600', color: '#0c1a33', letterSpacing: '-0.3px' },
   demoBanner: { background: 'linear-gradient(135deg, rgba(29,111,219,0.08), rgba(56,189,248,0.08))', border: '1px solid rgba(29,111,219,0.2)', borderRadius: '10px', padding: '10px 16px', marginBottom: '20px', fontSize: '13px', color: '#1d6fdb', fontFamily: "'Inter', sans-serif" },
-  main: { flex: 1, padding: '48px', overflowY: 'auto', background: '#f0f7ff' },
+  main: { flex: 1, padding: '48px', overflowY: 'auto', background: '#f0f7ff', minWidth: 0 },
   header: { marginBottom: '32px' },
   welcome: { fontSize: '26px', fontWeight: '700', color: '#0c1a33', marginBottom: '4px', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em' },
   role: { fontSize: '13px', color: '#4b5563', textTransform: 'capitalize', fontFamily: "'Inter', sans-serif" },
