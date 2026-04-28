@@ -942,7 +942,6 @@ function SuggestedTab() {
           const isExp  = expanded === seg.id
           const isDone = built[seg.id]
           const isBldg = building === seg.id
-          const tagColor = SEG_TAG_COLORS[seg.tag] || '#1d6fdb'
           return (
             <div key={seg.id} style={{ background:'white', borderRadius:'12px', border:`1px solid ${isExp ? 'rgba(29,111,219,0.28)' : 'rgba(29,111,219,0.1)'}`, boxShadow: isExp ? '0 4px 20px rgba(29,111,219,0.12)' : '0 2px 8px rgba(29,111,219,0.06)', overflow:'hidden', transition:'box-shadow 0.15s, border-color 0.15s' }}>
               <div style={{ padding:'16px 18px', cursor:'pointer' }} onClick={() => setExpanded(isExp ? null : seg.id)}>
