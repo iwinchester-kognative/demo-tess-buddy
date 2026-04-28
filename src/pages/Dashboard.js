@@ -5,6 +5,7 @@ import AgedRecordRemoval from './AgedRecordRemoval'
 import Screening from './Screening'
 import BuildSegment from './BuildSegment'
 import Dashboards from './Dashboards'
+import AiInsights from './AiInsights'
 
 function Dashboard({ session, orgData }) {
   const [apiStatus, setApiStatus] = useState('checking')
@@ -82,6 +83,7 @@ function Dashboard({ session, orgData }) {
             <span style={styles.navChip}>AI Segmentation & Analysis</span>
             <button style={activePage === 'buildSegment' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('buildSegment')}>Build a Segment</button>
             <button style={activePage === 'dashboards' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('dashboards')}>Dashboards</button>
+            <button style={activePage === 'aiInsights' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('aiInsights')}>AI Insights</button>
           </div>
         </nav>
         <div style={styles.statusRow}>
@@ -190,6 +192,9 @@ function Dashboard({ session, orgData }) {
         )}
         {activePage === 'dashboards' && (
           <Dashboards />
+        )}
+        {activePage === 'aiInsights' && (
+          <AiInsights />
         )}
       </div>
     </div>

@@ -1029,43 +1029,96 @@ function SuggestedTab({ onBuild }) {
 // QUICK TOOLS TAB
 // =====================================================================
 
+const FAKE_APPEALS = [
+  { id: 'AF25',    label: 'Annual Fund 2025' },
+  { id: 'SPRING',  label: 'Spring Appeal' },
+  { id: 'GALA25',  label: 'Opening Gala 2025' },
+  { id: 'PHONETH', label: 'Spring Phonathon' },
+  { id: 'MAJOR25', label: 'Major Gifts Campaign' },
+  { id: 'EOY25',   label: 'End of Year Appeal' },
+]
+
+const TB_LISTS_QT = [
+  { id: 4201, name: 'Donors >$500 last 12 months — no 2024 subscription' },
+  { id: 4202, name: 'Lapsed subscribers — attended 3+ shows in prior 3 seasons' },
+  { id: 4203, name: 'First-time buyers 2024 season — no follow-up gift' },
+  { id: 2201, name: 'Annual Fund Appeal 2024 — Lapsed Donors' },
+  { id: 2204, name: 'Spring Appeal — Under-40 Donors' },
+  { id: 2206, name: '5+ Year Ticket Buyers No Recent Gift' },
+]
+
 function QuickToolsTab() {
   const [activeTool, setActiveTool] = useState(null)
+  // Track last created source code so Promote to Source can default to it
+  const [lastSourceCode, setLastSourceCode] = useState(null)
+
   return (
     <div>
       <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '20px', fontFamily: "'Inter', sans-serif", lineHeight: '1.6' }}>
-        One-off utilities for common Tessitura data tasks — no SQL required.
+        One-off utilities for common Tessitura tasks — no SQL required.
       </p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
-        <PromoCodeTool active={activeTool === 'promo'} onToggle={() => setActiveTool(activeTool === 'promo' ? null : 'promo')} />
-        <SourceCodeTool active={activeTool === 'source'} onToggle={() => setActiveTool(activeTool === 'source' ? null : 'source')} />
-        <LinkToListTool active={activeTool === 'link'} onToggle={() => setActiveTool(activeTool === 'link' ? null : 'link')} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px' }}>
+        <PromoCodeTool
+          active={activeTool === 'promo'}
+          onToggle={() => setActiveTool(activeTool === 'promo' ? null : 'promo')}
+        />
+        <SourceCodeTool
+          active={activeTool === 'source'}
+          onToggle={() => setActiveTool(activeTool === 'source' ? null : 'source')}
+          onCreated={(code) => setLastSourceCode(code)}
+        />
+        <PromoteToSourceTool
+          active={activeTool === 'promote'}
+          onToggle={() => setActiveTool(activeTool === 'promote' ? null : 'promote')}
+          defaultSourceCode={lastSourceCode}
+        />
       </div>
     </div>
   )
 }
 
-// ── Promo Code Lookup ──────────────────────────────────────────────────────────
-const FAKE_PROMOS = {
-  'OPEN25':     { description: 'Opening Night 2025 Discount', discount: '20%', type: 'Percent', uses: 312, maxUses: 500,   revenue: '$14,820', expiry: '2025-06-15' },
-  'DONOR10':    { description: 'Donor Appreciation — $10 Off', discount: '$10', type: 'Amount',  uses: 87,  maxUses: 200,   revenue: '$4,108',  expiry: '2025-12-31' },
-  'STUDENT':    { description: 'Student Rush Pricing',         discount: '50%', type: 'Percent', uses: 941, maxUses: null,  revenue: '$8,204',  expiry: null         },
-  'BOARD2025':  { description: 'Board Comp Tickets',           discount: '100%',type: 'Percent', uses: 44,  maxUses: 100,   revenue: '$0',      expiry: '2025-05-31' },
-}
+// ── Promo Code Creator ─────────────────────────────────────────────────────────
 
 function PromoCodeTool({ active, onToggle }) {
   const [code, setCode] = useState('')
-  const [result, setResult] = useState(null)
+  const [discount, setDiscount] = useState('')
+  const [discountType, setDiscountType] = useState('percent')
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [loading, setLoading] = useState(false)
-  const [notFound, setNotFound] = useState(false)
+  const [created, setCreated] = useState(null)
 
-  const handleLookup = async () => {
-    setLoading(true); setResult(null); setNotFound(false)
-    await new Promise(r => setTimeout(r, 700))
-    const found = FAKE_PROMOS[code.trim().toUpperCase()]
+  const handleCreate = async () => {
+    setLoading(true)
+    await new Promise(r => setTimeout(r, 900))
     setLoading(false)
-    if (found) setResult(found)
-    else setNotFound(true)
+    setCreated({
+      code: code.trim().toUpperCase(),
+      discount: discountType === 'percent' ? `${discount}%` : `$${discount}`,
+      startDate: startDate || 'Immediately',
+      endDate: endDate || 'No expiry',
+    })
+  }
+
+  const canCreate = code.trim() && discount.trim() && !isNaN(Number(discount))
+
+  if (created) {
+    return (
+      <div style={qtStyles.card}>
+        <div style={{ padding: '20px 18px', textAlign: 'center' }}>
+          <div style={{ fontSize: '28px', marginBottom: '8px' }}>✅</div>
+          <p style={{ ...qtStyles.toolName, marginBottom: '4px' }}>Promo code created!</p>
+          <p style={{ fontSize: '22px', fontWeight: '700', color: '#1d6fdb', fontFamily: "'Space Grotesk', sans-serif", marginBottom: '4px' }}>{created.code}</p>
+          <p style={{ fontSize: '12px', color: '#6b7280', fontFamily: "'Inter', sans-serif", marginBottom: '14px' }}>
+            {created.discount} off · {created.startDate} → {created.endDate}
+          </p>
+          <button onClick={() => { setCreated(null); setCode(''); setDiscount(''); setStartDate(''); setEndDate('') }} style={{ ...qtStyles.btn, width: '100%' }}>
+            Create Another
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -1074,74 +1127,122 @@ function PromoCodeTool({ active, onToggle }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={qtStyles.icon}>🏷️</span>
           <div>
-            <p style={qtStyles.toolName}>Promo Code Lookup</p>
-            <p style={qtStyles.toolDesc}>Check usage and revenue for any promo code</p>
+            <p style={qtStyles.toolName}>Create Promo Code</p>
+            <p style={qtStyles.toolDesc}>New discount code with optional date window</p>
           </div>
         </div>
         <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>
       </div>
       {active && (
         <div style={qtStyles.body}>
-          <p style={qtStyles.hint}>Try: OPEN25, DONOR10, STUDENT, BOARD2025</p>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+          <div style={qtStyles.fieldGroup}>
+            <label style={qtStyles.label}>Code</label>
             <input
               value={code}
-              onChange={e => setCode(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && code && handleLookup()}
-              placeholder="Enter promo code"
+              onChange={e => setCode(e.target.value.toUpperCase())}
+              placeholder="e.g. OPENING25"
               style={qtStyles.input}
             />
-            <button onClick={handleLookup} disabled={!code || loading} style={qtStyles.btn}>
-              {loading ? '…' : 'Look up'}
-            </button>
           </div>
-          {notFound && <p style={qtStyles.error}>No promo code found matching "{code}".</p>}
-          {result && (
-            <div style={qtStyles.result}>
-              <p style={qtStyles.resultTitle}>{result.description}</p>
-              <div style={qtStyles.resultGrid}>
-                {[
-                  ['Discount', result.discount + (result.type === 'Percent' ? ' off' : ' off')],
-                  ['Uses', result.maxUses ? `${result.uses} / ${result.maxUses}` : `${result.uses} (unlimited)`],
-                  ['Revenue Generated', result.revenue],
-                  ['Expires', result.expiry || 'No expiry'],
-                ].map(([k, v]) => (
-                  <div key={k} style={qtStyles.resultRow}>
-                    <span style={qtStyles.resultKey}>{k}</span>
-                    <span style={qtStyles.resultVal}>{v}</span>
-                  </div>
-                ))}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={qtStyles.label}>Discount</label>
+              <input
+                value={discount}
+                onChange={e => setDiscount(e.target.value)}
+                placeholder="20"
+                style={qtStyles.input}
+                type="number"
+                min="0"
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={qtStyles.label}>Type</label>
+              <select
+                value={discountType}
+                onChange={e => setDiscountType(e.target.value)}
+                style={{ ...qtStyles.input, background: 'white' }}
+              >
+                <option value="percent">Percent off</option>
+                <option value="amount">Dollar off</option>
+                <option value="comp">Comp (100%)</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            style={{ background: 'none', border: 'none', color: '#1d6fdb', fontSize: '12px', fontFamily: "'Inter', sans-serif", cursor: 'pointer', padding: '0 0 10px', fontWeight: '600' }}
+          >
+            {showAdvanced ? '▲ Hide options' : '▼ Add start / end dates'}
+          </button>
+
+          {showAdvanced && (
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={qtStyles.label}>Start date</label>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={qtStyles.input} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={qtStyles.label}>End date</label>
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={qtStyles.input} />
               </div>
             </div>
           )}
+
+          <button
+            onClick={handleCreate}
+            disabled={!canCreate || loading}
+            style={{ ...qtStyles.btn, width: '100%', opacity: canCreate && !loading ? 1 : 0.5, cursor: canCreate && !loading ? 'pointer' : 'not-allowed' }}
+          >
+            {loading ? 'Creating…' : 'Create Promo Code'}
+          </button>
         </div>
       )}
     </div>
   )
 }
 
-// ── Source Code Lookup ─────────────────────────────────────────────────────────
-const FAKE_SOURCES = {
-  'AF25':    { description: 'Annual Fund 2025 — Direct Mail', channel: 'Direct Mail', donations: 284, amount: '$41,820', avgGift: '$147', firstGifts: 38 },
-  'EMAIL-Q1':{ description: 'Q1 Email Appeal', channel: 'Email', donations: 612, amount: '$28,340', avgGift: '$46', firstGifts: 94 },
-  'PHONETH': { description: 'Spring Phonathon', channel: 'Phone', donations: 174, amount: '$19,605', avgGift: '$113', firstGifts: 22 },
-  'ONLINE':  { description: 'Online Giving Page (Organic)', channel: 'Web', donations: 1041, amount: '$87,402', avgGift: '$84', firstGifts: 287 },
-  'GALA25':  { description: 'Opening Gala 2025 Ask', channel: 'Event', donations: 88, amount: '$62,450', avgGift: '$709', firstGifts: 11 },
-}
+// ── Source Code Creator ────────────────────────────────────────────────────────
 
-function SourceCodeTool({ active, onToggle }) {
+function SourceCodeTool({ active, onToggle, onCreated }) {
   const [code, setCode] = useState('')
-  const [result, setResult] = useState(null)
+  const [appeal, setAppeal] = useState('')
+  const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
-  const [notFound, setNotFound] = useState(false)
+  const [created, setCreated] = useState(null)
 
-  const handleLookup = async () => {
-    setLoading(true); setResult(null); setNotFound(false)
-    await new Promise(r => setTimeout(r, 700))
-    const found = FAKE_SOURCES[code.trim().toUpperCase()]
+  const handleCreate = async () => {
+    setLoading(true)
+    await new Promise(r => setTimeout(r, 800))
     setLoading(false)
-    if (found) setResult(found)
-    else setNotFound(true)
+    const result = {
+      code: code.trim().toUpperCase(),
+      appeal: FAKE_APPEALS.find(a => a.id === appeal)?.label || appeal,
+      description: description.trim() || '—',
+    }
+    setCreated(result)
+    onCreated && onCreated(result.code)
+  }
+
+  const canCreate = code.trim() && appeal
+
+  if (created) {
+    return (
+      <div style={qtStyles.card}>
+        <div style={{ padding: '20px 18px', textAlign: 'center' }}>
+          <div style={{ fontSize: '28px', marginBottom: '8px' }}>✅</div>
+          <p style={{ ...qtStyles.toolName, marginBottom: '4px' }}>Source code created!</p>
+          <p style={{ fontSize: '22px', fontWeight: '700', color: '#1d6fdb', fontFamily: "'Space Grotesk', sans-serif", marginBottom: '4px' }}>{created.code}</p>
+          <p style={{ fontSize: '12px', color: '#6b7280', fontFamily: "'Inter', sans-serif", marginBottom: '14px' }}>
+            Appeal: {created.appeal}
+          </p>
+          <button onClick={() => { setCreated(null); setCode(''); setAppeal(''); setDescription('') }} style={{ ...qtStyles.btn, width: '100%' }}>
+            Create Another
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -1150,78 +1251,100 @@ function SourceCodeTool({ active, onToggle }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={qtStyles.icon}>📊</span>
           <div>
-            <p style={qtStyles.toolName}>Source Code Attribution</p>
-            <p style={qtStyles.toolDesc}>Pull donation totals by source code</p>
+            <p style={qtStyles.toolName}>Create Source Code</p>
+            <p style={qtStyles.toolDesc}>New source code linked to an appeal</p>
           </div>
         </div>
         <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>
       </div>
       {active && (
         <div style={qtStyles.body}>
-          <p style={qtStyles.hint}>Try: AF25, EMAIL-Q1, PHONETH, ONLINE, GALA25</p>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+          <div style={qtStyles.fieldGroup}>
+            <label style={qtStyles.label}>Source code</label>
             <input
               value={code}
-              onChange={e => setCode(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && code && handleLookup()}
-              placeholder="Enter source code"
+              onChange={e => setCode(e.target.value.toUpperCase())}
+              placeholder="e.g. EMAIL-MAY25"
               style={qtStyles.input}
             />
-            <button onClick={handleLookup} disabled={!code || loading} style={qtStyles.btn}>
-              {loading ? '…' : 'Look up'}
-            </button>
           </div>
-          {notFound && <p style={qtStyles.error}>No source code found matching "{code}".</p>}
-          {result && (
-            <div style={qtStyles.result}>
-              <p style={qtStyles.resultTitle}>{result.description}</p>
-              <div style={qtStyles.resultGrid}>
-                {[
-                  ['Channel', result.channel],
-                  ['Total Raised', result.amount],
-                  ['Donations', result.donations.toLocaleString()],
-                  ['Avg Gift', result.avgGift],
-                  ['First-Time Donors', result.firstGifts],
-                ].map(([k, v]) => (
-                  <div key={k} style={qtStyles.resultRow}>
-                    <span style={qtStyles.resultKey}>{k}</span>
-                    <span style={qtStyles.resultVal}>{v}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <div style={qtStyles.fieldGroup}>
+            <label style={qtStyles.label}>Appeal</label>
+            <select
+              value={appeal}
+              onChange={e => setAppeal(e.target.value)}
+              style={{ ...qtStyles.input, background: 'white' }}
+            >
+              <option value="">Select an appeal…</option>
+              {FAKE_APPEALS.map(a => (
+                <option key={a.id} value={a.id}>{a.label}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ ...qtStyles.fieldGroup, marginBottom: '14px' }}>
+            <label style={qtStyles.label}>Description <span style={{ color: '#9ca3af', fontWeight: '400' }}>(optional)</span></label>
+            <input
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="e.g. May email blast to lapsed donors"
+              style={qtStyles.input}
+            />
+          </div>
+          <button
+            onClick={handleCreate}
+            disabled={!canCreate || loading}
+            style={{ ...qtStyles.btn, width: '100%', opacity: canCreate && !loading ? 1 : 0.5, cursor: canCreate && !loading ? 'pointer' : 'not-allowed' }}
+          >
+            {loading ? 'Creating…' : 'Create Source Code'}
+          </button>
         </div>
       )}
     </div>
   )
 }
 
-// ── Link to List ───────────────────────────────────────────────────────────────
-function LinkToListTool({ active, onToggle }) {
-  const [listId, setListId] = useState('')
-  const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [copied, setCopied] = useState(false)
+// ── Promote to Source ──────────────────────────────────────────────────────────
 
-  const handleGenerate = async () => {
-    setLoading(true); setResult(null)
-    await new Promise(r => setTimeout(r, 600))
+function PromoteToSourceTool({ active, onToggle, defaultSourceCode }) {
+  const [sourceCode, setSourceCode] = useState('')
+  const [listId, setListId] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(null)
+
+  // Pre-fill source code if one was just created
+  React.useEffect(() => {
+    if (defaultSourceCode) setSourceCode(defaultSourceCode)
+  }, [defaultSourceCode])
+
+  const handlePromote = async () => {
+    setLoading(true)
+    await new Promise(r => setTimeout(r, 1000))
     setLoading(false)
-    const id = listId.trim() || '4201'
-    setResult({
-      url: `https://app.tessbuddy.com/share/list/${id}?token=demo_${id}_abc123`,
-      expires: '30 days',
-      listId: id,
+    const list = TB_LISTS_QT.find(l => String(l.id) === String(listId))
+    setDone({
+      sourceCode: sourceCode.trim().toUpperCase(),
+      list: list ? list.name : `List #${listId}`,
+      listId,
     })
   }
 
-  const handleCopy = () => {
-    if (result) {
-      navigator.clipboard.writeText(result.url).catch(() => {})
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
+  const canPromote = sourceCode.trim() && listId
+
+  if (done) {
+    return (
+      <div style={qtStyles.card}>
+        <div style={{ padding: '20px 18px', textAlign: 'center' }}>
+          <div style={{ fontSize: '28px', marginBottom: '8px' }}>✅</div>
+          <p style={{ ...qtStyles.toolName, marginBottom: '6px' }}>Promoted to source!</p>
+          <p style={{ fontSize: '12px', color: '#6b7280', fontFamily: "'Inter', sans-serif", lineHeight: '1.6', marginBottom: '14px' }}>
+            Source <strong style={{ color: '#1d6fdb' }}>{done.sourceCode}</strong> is now linked to<br />"{done.list}"
+          </p>
+          <button onClick={() => { setDone(null); setSourceCode(''); setListId('') }} style={{ ...qtStyles.btn, width: '100%' }}>
+            Promote Another
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -1230,48 +1353,46 @@ function LinkToListTool({ active, onToggle }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={qtStyles.icon}>🔗</span>
           <div>
-            <p style={qtStyles.toolName}>Link to List</p>
-            <p style={qtStyles.toolDesc}>Generate a shareable URL for any Tessitura list</p>
+            <p style={qtStyles.toolName}>Promote to Source</p>
+            <p style={qtStyles.toolDesc}>Link a source code to a Tessitura list</p>
           </div>
         </div>
         <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>
       </div>
       {active && (
         <div style={qtStyles.body}>
-          <p style={qtStyles.hint}>Enter a Tessitura list ID to generate a shareable link.</p>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+          <div style={qtStyles.fieldGroup}>
+            <label style={qtStyles.label}>Source code</label>
             <input
+              value={sourceCode}
+              onChange={e => setSourceCode(e.target.value.toUpperCase())}
+              placeholder="e.g. EMAIL-MAY25"
+              style={qtStyles.input}
+            />
+            <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', fontFamily: "'Inter', sans-serif" }}>
+              Create one using the Source Code tool above, or enter any existing code.
+            </p>
+          </div>
+          <div style={{ ...qtStyles.fieldGroup, marginBottom: '14px' }}>
+            <label style={qtStyles.label}>List</label>
+            <select
               value={listId}
               onChange={e => setListId(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleGenerate()}
-              placeholder="List ID (e.g. 4201)"
-              style={{ ...qtStyles.input, maxWidth: '160px' }}
-            />
-            <button onClick={handleGenerate} disabled={loading} style={qtStyles.btn}>
-              {loading ? '…' : 'Generate'}
-            </button>
+              style={{ ...qtStyles.input, background: 'white' }}
+            >
+              <option value="">Select a list…</option>
+              {TB_LISTS_QT.map(l => (
+                <option key={l.id} value={l.id}>#{l.id} — {l.name}</option>
+              ))}
+            </select>
           </div>
-          {result && (
-            <div style={qtStyles.result}>
-              <p style={qtStyles.resultTitle}>Shareable link for List #{result.listId}</p>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
-                <input
-                  readOnly
-                  value={result.url}
-                  style={{ ...qtStyles.input, flex: 1, fontSize: '11px', color: '#374151', background: '#f0f4fa' }}
-                />
-                <button
-                  onClick={handleCopy}
-                  style={{ ...qtStyles.btn, background: copied ? '#16a34a' : undefined, whiteSpace: 'nowrap' }}
-                >
-                  {copied ? '✓ Copied' : 'Copy'}
-                </button>
-              </div>
-              <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '6px', fontFamily: "'Inter', sans-serif" }}>
-                Link expires in {result.expires}. Recipients need a Tess Buddy account to view.
-              </p>
-            </div>
-          )}
+          <button
+            onClick={handlePromote}
+            disabled={!canPromote || loading}
+            style={{ ...qtStyles.btn, width: '100%', opacity: canPromote && !loading ? 1 : 0.5, cursor: canPromote && !loading ? 'pointer' : 'not-allowed' }}
+          >
+            {loading ? 'Promoting…' : 'Promote to Source'}
+          </button>
         </div>
       )}
     </div>
@@ -1285,16 +1406,10 @@ const qtStyles = {
   toolName: { fontSize: '13px', fontWeight: '700', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif" },
   toolDesc: { fontSize: '12px', color: '#6b7280', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" },
   body: { borderTop: '1px solid rgba(29,111,219,0.08)', padding: '14px 18px 18px' },
-  hint: { fontSize: '11px', color: '#9ca3af', marginBottom: '10px', fontFamily: "'Inter', sans-serif" },
-  input: { flex: 1, padding: '8px 12px', border: '1px solid rgba(29,111,219,0.18)', borderRadius: '7px', fontSize: '13px', fontFamily: "'Inter', sans-serif", outline: 'none' },
-  btn: { padding: '8px 16px', background: 'linear-gradient(135deg, #1d6fdb, #38bdf8)', color: 'white', border: 'none', borderRadius: '7px', fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' },
-  error: { fontSize: '12px', color: '#ef4444', margin: '0 0 8px', fontFamily: "'Inter', sans-serif" },
-  result: { background: '#f8fafd', borderRadius: '8px', border: '1px solid rgba(29,111,219,0.12)', padding: '12px 14px' },
-  resultTitle: { fontSize: '13px', fontWeight: '700', color: '#0c1a33', margin: '0 0 8px', fontFamily: "'Space Grotesk', sans-serif" },
-  resultGrid: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  resultRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  resultKey: { fontSize: '11px', color: '#6b7280', fontFamily: "'Inter', sans-serif" },
-  resultVal: { fontSize: '12px', fontWeight: '600', color: '#0c1a33', fontFamily: "'Inter', sans-serif" },
+  fieldGroup: { marginBottom: '12px' },
+  label: { display: 'block', fontSize: '11px', fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '5px', fontFamily: "'Inter', sans-serif" },
+  input: { width: '100%', boxSizing: 'border-box', padding: '8px 12px', border: '1px solid rgba(29,111,219,0.18)', borderRadius: '7px', fontSize: '13px', fontFamily: "'Inter', sans-serif", outline: 'none' },
+  btn: { padding: '9px 16px', background: 'linear-gradient(135deg, #1d6fdb, #38bdf8)', color: 'white', border: 'none', borderRadius: '7px', fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' },
 }
 
 // ---- Keyframe animation for typing dots (injected once) ----

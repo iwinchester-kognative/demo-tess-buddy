@@ -23,25 +23,7 @@ const WEEKLY_PACING = [
 const CURRENT_WEEK = 14
 
 // ─── KPI data ─────────────────────────────────────────────────────────────────
-const KPIS = [
-  { label: 'Cumulative Revenue',    fy25: '$2,742,100', fy24: '$2,581,300', delta: '+6.2%',  up: true  },
-  { label: 'Subscription Revenue',  fy25: '$1,184,300', fy24: '$1,097,600', delta: '+7.9%',  up: true  },
-  { label: 'Avg Ticket Value',      fy25: '$94.20',     fy24: '$88.50',     delta: '+6.4%',  up: true  },
-  { label: 'Active Subscribers',    fy25: '4,218',      fy24: '4,089',      delta: '+3.2%',  up: true  },
-  { label: 'New Donors (YTD)',       fy25: '847',        fy24: '754',        delta: '+12.3%', up: true  },
-  { label: 'Avg Gift Amount',       fy25: '$1,247',     fy24: '$1,186',     delta: '+5.1%',  up: true  },
-  { label: 'Transactions',          fy25: '29,108',     fy24: '29,166',     delta: '-0.2%',  up: false },
-  { label: 'Unique Buyers',         fy25: '8,841',      fy24: '8,614',      delta: '+2.6%',  up: true  },
-]
 
-// ─── Week-over-week table ──────────────────────────────────────────────────────
-const WOW_ROWS = [
-  { week: 'W14 (current)', fy25_rev: '$160,700', fy24_rev: '$107,100', delta: '+50.0%', fy25_trx: 1708, fy24_trx: 1421 },
-  { week: 'W13',           fy25_rev: '$142,700', fy24_rev: '$132,400', delta: '+7.8%',  fy25_trx: 1516, fy24_trx: 1402 },
-  { week: 'W12',           fy25_rev: '$157,500', fy24_rev: '$159,600', delta: '-1.3%',  fy25_trx: 1672, fy24_trx: 1582 },
-  { week: 'W11',           fy25_rev: '$141,800', fy24_rev: '$168,400', delta: '-15.8%', fy25_trx: 1507, fy24_trx: 1687 },
-  { week: 'W10',           fy25_rev: '$212,300', fy24_rev: '$190,500', delta: '+11.4%', fy25_trx: 2255, fy24_trx: 1904 },
-]
 
 // ─── SVG Pacing Chart ─────────────────────────────────────────────────────────
 
@@ -201,51 +183,16 @@ function PacingChart({ data, currentWeek }) {
   )
 }
 
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
-
-function TabBtn({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: '7px 18px',
-        border: 'none',
-        borderBottom: active ? '2px solid #1d6fdb' : '2px solid transparent',
-        background: 'none',
-        fontSize: '13px',
-        fontWeight: active ? '600' : '400',
-        color: active ? '#1d6fdb' : '#6b7280',
-        cursor: 'pointer',
-        fontFamily: 'Inter, sans-serif',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {label}
-    </button>
-  )
-}
-
 // ─── Main component ────────────────────────────────────────────────────────────
 
 function Dashboards() {
-  const [activeTab, setActiveTab] = useState('pacing')
-
   return (
     <div>
       <div style={s.header}>
         <h1 style={s.title}>Dashboards</h1>
-        <p style={s.subtitle}>Live views into your season performance — sales pacing, KPI trends, and week-over-week analysis.</p>
+        <p style={s.subtitle}>Season sales pacing — cumulative revenue compared to prior year.</p>
       </div>
-
-      <div style={s.tabBar}>
-        <TabBtn label="Sales Pacing"    active={activeTab === 'pacing'}  onClick={() => setActiveTab('pacing')}  />
-        <TabBtn label="KPI Overview"    active={activeTab === 'kpi'}     onClick={() => setActiveTab('kpi')}     />
-        <TabBtn label="Week-over-Week"  active={activeTab === 'wow'}     onClick={() => setActiveTab('wow')}     />
-      </div>
-
-      {activeTab === 'pacing' && <PacingTab />}
-      {activeTab === 'kpi'    && <KpiTab />}
-      {activeTab === 'wow'    && <WowTab />}
+      <PacingTab />
     </div>
   )
 }
@@ -291,90 +238,12 @@ function PacingTab() {
   )
 }
 
-// ─── KPI Tab ──────────────────────────────────────────────────────────────────
-
-function KpiTab() {
-  return (
-    <div style={s.panel}>
-      <p style={{ fontSize: '13px', color: '#6b7280', fontFamily: 'Inter, sans-serif', marginBottom: '20px' }}>
-        All figures through Week {CURRENT_WEEK}. Compared to same point in FY24.
-      </p>
-      <div style={s.kpiGrid}>
-        {KPIS.map((kpi, i) => (
-          <div key={i} style={s.kpiCard}>
-            <p style={s.kpiLabel}>{kpi.label}</p>
-            <p style={s.kpiValue}>{kpi.fy25}</p>
-            <div style={s.kpiFooter}>
-              <span style={{ ...s.kpiDelta, color: kpi.up ? '#16a34a' : '#ef4444' }}>{kpi.delta}</span>
-              <span style={s.kpiPrior}>vs {kpi.fy24} FY24</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ─── Week-over-Week Tab ───────────────────────────────────────────────────────
-
-function WowTab() {
-  return (
-    <div style={s.panel}>
-      <div style={s.card}>
-        <p style={s.cardTitle}>Weekly Revenue Comparison</p>
-        <p style={s.cardHint}>FY25 vs FY24 for same week of season. Most recent first.</p>
-        <table style={s.table}>
-          <thead>
-            <tr>
-              {['Week', 'FY25 Revenue', 'FY24 Revenue', 'Change', 'FY25 Trx', 'FY24 Trx'].map(h => (
-                <th key={h} style={s.th}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {WOW_ROWS.map((row, i) => {
-              const isPositive = row.delta.startsWith('+')
-              return (
-                <tr key={i} style={{ background: i % 2 === 0 ? 'white' : '#f8fafd' }}>
-                  <td style={s.td}>
-                    <span style={{ fontWeight: i === 0 ? '600' : '400', color: i === 0 ? '#0c1a33' : '#374151' }}>
-                      {row.week}
-                    </span>
-                  </td>
-                  <td style={{ ...s.td, fontWeight: '600', color: '#0c1a33' }}>{row.fy25_rev}</td>
-                  <td style={{ ...s.td, color: '#6b7280' }}>{row.fy24_rev}</td>
-                  <td style={s.td}>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '2px 8px',
-                      borderRadius: '100px',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      background: isPositive ? 'rgba(22,163,74,0.1)' : 'rgba(239,68,68,0.1)',
-                      color: isPositive ? '#16a34a' : '#ef4444',
-                    }}>
-                      {row.delta}
-                    </span>
-                  </td>
-                  <td style={{ ...s.td, color: '#374151' }}>{row.fy25_trx.toLocaleString()}</td>
-                  <td style={{ ...s.td, color: '#9ca3af' }}>{row.fy24_trx.toLocaleString()}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const s = {
   header: { marginBottom: '24px' },
   title: { fontSize: '24px', fontWeight: '700', color: '#0c1a33', marginBottom: '4px', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em' },
   subtitle: { fontSize: '13px', color: '#6b7280', fontFamily: "'Inter', sans-serif" },
-  tabBar: { display: 'flex', borderBottom: '1px solid rgba(29,111,219,0.12)', marginBottom: '24px', gap: '4px' },
   panel: {},
   card: { background: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 2px 16px rgba(29,111,219,0.08)', border: '1px solid rgba(29,111,219,0.1)', marginBottom: '20px' },
   cardTitle: { fontSize: '14px', fontWeight: '700', color: '#0c1a33', marginBottom: '2px', fontFamily: "'Space Grotesk', sans-serif" },
@@ -384,16 +253,6 @@ const s = {
   chipLabel: { fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9ca3af', fontFamily: "'Inter', sans-serif" },
   chipValue: { fontSize: '22px', fontWeight: '700', color: '#0c1a33', fontFamily: "'Space Grotesk', sans-serif" },
   chipDelta: { fontSize: '12px', fontWeight: '500', fontFamily: "'Inter', sans-serif" },
-  kpiGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '14px' },
-  kpiCard: { background: 'white', borderRadius: '10px', padding: '18px 20px', boxShadow: '0 2px 10px rgba(29,111,219,0.07)', border: '1px solid rgba(29,111,219,0.1)' },
-  kpiLabel: { fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '8px', fontFamily: "'Inter', sans-serif" },
-  kpiValue: { fontSize: '26px', fontWeight: '700', color: '#0c1a33', marginBottom: '8px', fontFamily: "'Space Grotesk', sans-serif" },
-  kpiFooter: { display: 'flex', alignItems: 'center', gap: '8px' },
-  kpiDelta: { fontSize: '12px', fontWeight: '700', fontFamily: "'Inter', sans-serif" },
-  kpiPrior: { fontSize: '11px', color: '#9ca3af', fontFamily: "'Inter', sans-serif" },
-  table: { width: '100%', borderCollapse: 'collapse', marginTop: '16px', fontFamily: "'Inter', sans-serif" },
-  th: { textAlign: 'left', fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9ca3af', padding: '8px 12px', borderBottom: '1px solid rgba(29,111,219,0.1)' },
-  td: { padding: '10px 12px', fontSize: '13px', borderBottom: '1px solid #f0f4f8', fontFamily: "'Inter', sans-serif" },
 }
 
 export default Dashboards
