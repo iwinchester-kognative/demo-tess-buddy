@@ -7,6 +7,23 @@ import BuildSegment, { PromoCodeTool, SourceCodeTool, PromoteToSourceTool } from
 import WealthScreening from './WealthScreening'
 import InsightsHub from './InsightsHub'
 
+function NavItem({ icon, label, active, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      display: 'flex', alignItems: 'center', gap: '9px',
+      width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer',
+      padding: '7px 10px', borderRadius: '8px', marginBottom: '1px',
+      background: active ? 'rgba(29,111,219,0.09)' : 'transparent',
+      color: active ? '#1d6fdb' : '#4b5563',
+      fontSize: '13px', fontWeight: active ? '600' : '400',
+      fontFamily: "'Inter', sans-serif",
+    }}>
+      <span style={{ fontSize: '15px', width: '20px', textAlign: 'center', flexShrink: 0, lineHeight: 1, opacity: active ? 1 : 0.7 }}>{icon}</span>
+      {label}
+    </button>
+  )
+}
+
 function HomeQuickTools() {
   const [lastSourceCode, setLastSourceCode] = useState(null)
   return (
@@ -89,55 +106,47 @@ function Dashboard({ session, orgData }) {
           <span style={styles.logoBrandName}>Tess Buddy</span>
         </div>
         <p style={styles.orgName}>{orgData.organizations.org_name}</p>
-        <nav>
-          <div style={styles.navGroup}>
-            <span style={styles.navChip}>Record Cleaning</span>
-            <button style={activePage === 'constituentMerge' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('constituentMerge')}>Constituent Merge</button>
-            <button style={activePage === 'agedRecordRemoval' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('agedRecordRemoval')}>Aged Record Removal</button>
-          </div>
-          <div style={styles.navGroup}>
-            <span style={styles.navChip}>Contact Point Screening</span>
-            <button style={activePage === 'screening' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('screening')}>Contact Point Screening</button>
-            <button style={activePage === 'wealthScreening' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('wealthScreening')}>Wealth Screening</button>
-          </div>
-          <div style={styles.navGroup}>
-            <span style={styles.navChip}>AI Segmentation & Analysis</span>
-            <button style={activePage === 'buildSegment' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('buildSegment')}>Segments</button>
-            <button style={activePage === 'insights' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('insights')}>Insights</button>
-          </div>
+
+        <nav style={{ flex: 1 }}>
+          <NavItem icon="⊞" label="Home"                 active={activePage === 'dashboard'}        onClick={() => setActivePage('dashboard')} />
+          <div style={styles.navSep} />
+          <NavItem icon="🔀" label="Constituent Merge"   active={activePage === 'constituentMerge'} onClick={() => setActivePage('constituentMerge')} />
+          <NavItem icon="🗂️" label="Aged Record Removal" active={activePage === 'agedRecordRemoval'} onClick={() => setActivePage('agedRecordRemoval')} />
+          <div style={styles.navSep} />
+          <NavItem icon="✉️" label="Contact Screening"   active={activePage === 'screening'}        onClick={() => setActivePage('screening')} />
+          <NavItem icon="💎" label="Wealth Screening"    active={activePage === 'wealthScreening'}  onClick={() => setActivePage('wealthScreening')} />
+          <div style={styles.navSep} />
+          <NavItem icon="🎯" label="Segments"            active={activePage === 'buildSegment'}     onClick={() => setActivePage('buildSegment')} />
+          <NavItem icon="💡" label="Insights"            active={activePage === 'insights'}         onClick={() => setActivePage('insights')} />
         </nav>
 
-        {/* Usage tracker */}
-        <div style={styles.usageBlock}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
-            <span style={styles.usageLabel}>Credits Used</span>
-            <span style={styles.usageCount}>{credits} <span style={{ fontWeight: '400', color: '#9ca3af' }}>/ {CREDIT_LIMIT}</span></span>
+        <div style={styles.sidebarFooter}>
+          <div style={styles.usageBlock}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+              <span style={styles.usageLabel}>Credits Used</span>
+              <span style={styles.usageCount}>{credits} <span style={{ fontWeight: '400', color: '#9ca3af' }}>/ {CREDIT_LIMIT}</span></span>
+            </div>
+            <div style={styles.usageTrack}>
+              <div style={{
+                ...styles.usageFill,
+                width: `${Math.min((credits / CREDIT_LIMIT) * 100, 100)}%`,
+                background: credits / CREDIT_LIMIT > 0.85 ? 'linear-gradient(90deg, #f59e0b, #ef4444)' :
+                            credits / CREDIT_LIMIT > 0.6  ? 'linear-gradient(90deg, #1d6fdb, #f59e0b)' :
+                            'linear-gradient(90deg, #1d6fdb, #38bdf8)',
+              }} />
+            </div>
+            <p style={styles.usageHint}>
+              {credits / CREDIT_LIMIT > 0.85 ? '⚠️ Approaching limit' :
+               credits / CREDIT_LIMIT > 0.6  ? 'Moderate usage' :
+               'Usage within normal range'}
+            </p>
           </div>
-          <div style={styles.usageTrack}>
-            <div style={{
-              ...styles.usageFill,
-              width: `${Math.min((credits / CREDIT_LIMIT) * 100, 100)}%`,
-              background: credits / CREDIT_LIMIT > 0.85 ? 'linear-gradient(90deg, #f59e0b, #ef4444)' :
-                          credits / CREDIT_LIMIT > 0.6  ? 'linear-gradient(90deg, #1d6fdb, #f59e0b)' :
-                          'linear-gradient(90deg, #1d6fdb, #38bdf8)',
-            }} />
+          <div style={styles.statusRow}>
+            <div style={{ ...styles.statusDot, backgroundColor: status.dot }} />
+            <span style={{ ...styles.statusLabel, color: status.color, flex: 1 }}>{status.label}</span>
+            <button style={styles.logoutInline} onClick={handleLogout}>Sign out</button>
           </div>
-          <p style={styles.usageHint}>
-            {credits / CREDIT_LIMIT > 0.85 ? '⚠️ Approaching limit' :
-             credits / CREDIT_LIMIT > 0.6  ? 'Moderate usage' :
-             'Usage within normal range'}
-          </p>
         </div>
-
-        <div style={styles.statusRow}>
-          <div style={{ ...styles.statusDot, backgroundColor: status.dot }} />
-          <span style={{ ...styles.statusLabel, color: status.color }}>
-            {status.label}
-          </span>
-        </div>
-        <button style={styles.logout} onClick={handleLogout}>
-          Sign Out
-        </button>
       </div>
       <div style={styles.main}>
         <div style={styles.demoBanner}>
@@ -254,21 +263,19 @@ function Dashboard({ session, orgData }) {
 
 const styles = {
   container: { display: 'flex', height: '100vh', background: '#f0f7ff' },
-  sidebar: { width: '240px', backgroundColor: 'white', borderRight: '1px solid rgba(29,111,219,0.1)', padding: '24px 16px', display: 'flex', flexDirection: 'column', flexShrink: 0, boxShadow: '2px 0 16px rgba(29,111,219,0.05)' },
-  logoBlock: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px', textDecoration: 'none' },
+  sidebar: { width: '220px', backgroundColor: 'white', borderRight: '1px solid rgba(29,111,219,0.1)', padding: '20px 12px', display: 'flex', flexDirection: 'column', flexShrink: 0, boxShadow: '2px 0 16px rgba(29,111,219,0.05)' },
+  logoBlock: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', textDecoration: 'none' },
   logoMark: { width: '32px', height: '32px', background: 'linear-gradient(135deg, #1d6fdb, #38bdf8)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Space Grotesk', sans-serif", fontWeight: '700', fontSize: '14px', color: '#fff', flexShrink: 0 },
   logoBrandName: { fontFamily: "'Space Grotesk', sans-serif", fontSize: '17px', fontWeight: '600', color: '#0c1a33', letterSpacing: '-0.3px' },
   logo: { color: '#0c1a33', fontSize: '20px', fontWeight: '700', margin: 0 },
-  orgName: { color: '#9ca3af', fontSize: '11px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase', paddingLeft: '4px', marginBottom: '8px', fontFamily: "'Inter', sans-serif" },
-  navGroup: { marginBottom: '18px' },
-  navChip: { display: 'inline-block', fontSize: '10px', fontWeight: '700', color: '#1d6fdb', background: 'rgba(29,111,219,0.07)', border: '1px solid rgba(29,111,219,0.15)', borderRadius: '100px', padding: '3px 10px', letterSpacing: '0.04em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", marginBottom: '8px' },
-  navLink: { display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '5px 4px', fontSize: '13px', fontWeight: '400', color: '#4b5563', fontFamily: "'Inter', sans-serif", cursor: 'pointer', borderRadius: '6px' },
-  navLinkActive: { display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '5px 4px', fontSize: '13px', fontWeight: '600', color: '#1d6fdb', fontFamily: "'Inter', sans-serif", cursor: 'pointer', borderRadius: '6px' },
+  orgName: { color: '#b0bac5', fontSize: '11px', fontWeight: '500', letterSpacing: '0.3px', paddingLeft: '10px', marginBottom: '16px', fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  navSep: { height: '1px', background: 'rgba(29,111,219,0.07)', margin: '6px 4px' },
+  sidebarFooter: { borderTop: '1px solid rgba(29,111,219,0.07)', paddingTop: '12px' },
+  statusRow: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 2px' },
+  statusDot: { width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0 },
+  statusLabel: { fontSize: '11px', fontWeight: '500', fontFamily: "'Inter', sans-serif" },
+  logoutInline: { background: 'none', border: 'none', color: '#9ca3af', fontSize: '11px', fontFamily: "'Inter', sans-serif", cursor: 'pointer', padding: '2px 4px', borderRadius: '4px', flexShrink: 0 },
   demoBanner: { background: 'linear-gradient(135deg, rgba(29,111,219,0.08), rgba(56,189,248,0.08))', border: '1px solid rgba(29,111,219,0.2)', borderRadius: '10px', padding: '10px 16px', marginBottom: '20px', fontSize: '13px', color: '#1d6fdb', fontFamily: "'Inter', sans-serif" },
-  statusRow: { display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 4px', marginTop: 'auto', marginBottom: '8px' },
-  statusDot: { width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0 },
-  statusLabel: { fontSize: '12px', fontWeight: '500', fontFamily: "'Inter', sans-serif" },
-  logout: { padding: '9px 12px', backgroundColor: 'transparent', color: '#6b7280', border: '1px solid rgba(29,111,219,0.15)', borderRadius: '8px', fontSize: '14px', fontFamily: "'Inter', sans-serif", cursor: 'pointer' },
   main: { flex: 1, padding: '48px', overflowY: 'auto', background: '#f0f7ff' },
   header: { marginBottom: '32px' },
   welcome: { fontSize: '26px', fontWeight: '700', color: '#0c1a33', marginBottom: '4px', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em' },
