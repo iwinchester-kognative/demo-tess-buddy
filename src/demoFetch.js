@@ -408,7 +408,7 @@ window.fetch = async function demoFetch(input, init) {
   // ---- Claude -------------------------------------------------
   if (path === '/api/claude') {
     await delay(1100 + Math.random() * 500)
-    const msg = (body && body.userMessage || '').toLowerCase()
+    const msg = ((body && body.userMessage) || '').toLowerCase()
     if (msg.length < 20) {
       return json({ content: [{ text: JSON.stringify({ refinement_question: "Happy to help! Could you add a bit more detail — for example, a time period, donation amount, or ticket-buying behaviour to focus on?" }) }] })
     }
