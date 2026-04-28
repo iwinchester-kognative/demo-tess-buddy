@@ -58,38 +58,18 @@ function Dashboard({ session, orgData }) {
         </div>
         <p style={styles.orgName}>{orgData.organizations.org_name}</p>
         <nav>
-          <p style={styles.navSection}>Record Cleaning</p>
-          <div style={styles.chipGroup}>
-            <button
-              style={activePage === 'constituentMerge' ? styles.chipActive : styles.chip}
-              onClick={() => setActivePage('constituentMerge')}
-            >
-              Constituent Merge
-            </button>
-            <button
-              style={activePage === 'agedRecordRemoval' ? styles.chipActive : styles.chip}
-              onClick={() => setActivePage('agedRecordRemoval')}
-            >
-              Aged Record Removal
-            </button>
+          <div style={styles.navGroup}>
+            <span style={styles.navChip}>Record Cleaning</span>
+            <button style={activePage === 'constituentMerge' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('constituentMerge')}>Constituent Merge</button>
+            <button style={activePage === 'agedRecordRemoval' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('agedRecordRemoval')}>Aged Record Removal</button>
           </div>
-          <p style={styles.navSection}>Contact Point Screening</p>
-          <div style={styles.chipGroup}>
-            <button
-              style={activePage === 'screening' ? styles.chipActive : styles.chip}
-              onClick={() => setActivePage('screening')}
-            >
-              Contact Point Screening
-            </button>
+          <div style={styles.navGroup}>
+            <span style={styles.navChip}>Contact Point Screening</span>
+            <button style={activePage === 'screening' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('screening')}>Contact Point Screening</button>
           </div>
-          <p style={styles.navSection}>AI Segmentation & Analysis</p>
-          <div style={styles.chipGroup}>
-            <button
-              style={activePage === 'buildSegment' ? styles.chipActive : styles.chip}
-              onClick={() => setActivePage('buildSegment')}
-            >
-              Build a Segment
-            </button>
+          <div style={styles.navGroup}>
+            <span style={styles.navChip}>AI Segmentation & Analysis</span>
+            <button style={activePage === 'buildSegment' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('buildSegment')}>Build a Segment</button>
           </div>
         </nav>
         <div style={styles.statusRow}>
@@ -149,10 +129,10 @@ const styles = {
   logoBrandName: { fontFamily: "'Space Grotesk', sans-serif", fontSize: '17px', fontWeight: '600', color: '#0c1a33', letterSpacing: '-0.3px' },
   logo: { color: '#0c1a33', fontSize: '20px', fontWeight: '700', margin: 0 },
   orgName: { color: '#9ca3af', fontSize: '11px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase', paddingLeft: '4px', marginBottom: '8px', fontFamily: "'Inter', sans-serif" },
-  navSection: { color: '#9ca3af', fontSize: '10px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', padding: '16px 4px 6px', fontFamily: "'Inter', sans-serif" },
-  chipGroup: { display: 'flex', flexWrap: 'wrap', gap: '6px', paddingBottom: '4px' },
-  chip: { fontSize: '11px', fontWeight: '500', color: '#1d6fdb', background: 'rgba(29,111,219,0.07)', border: '1px solid rgba(29,111,219,0.15)', borderRadius: '100px', padding: '4px 12px', letterSpacing: '0.03em', fontFamily: "'Inter', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' },
-  chipActive: { fontSize: '11px', fontWeight: '700', color: '#fff', background: 'linear-gradient(135deg, #1d6fdb, #38bdf8)', border: '1px solid transparent', borderRadius: '100px', padding: '4px 12px', letterSpacing: '0.03em', fontFamily: "'Inter', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(29,111,219,0.3)' },
+  navGroup: { marginBottom: '18px' },
+  navChip: { display: 'inline-block', fontSize: '10px', fontWeight: '700', color: '#1d6fdb', background: 'rgba(29,111,219,0.07)', border: '1px solid rgba(29,111,219,0.15)', borderRadius: '100px', padding: '3px 10px', letterSpacing: '0.04em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", marginBottom: '8px' },
+  navLink: { display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '5px 4px', fontSize: '13px', fontWeight: '400', color: '#4b5563', fontFamily: "'Inter', sans-serif", cursor: 'pointer', borderRadius: '6px' },
+  navLinkActive: { display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '5px 4px', fontSize: '13px', fontWeight: '600', color: '#1d6fdb', fontFamily: "'Inter', sans-serif", cursor: 'pointer', borderRadius: '6px' },
   demoBanner: { background: 'linear-gradient(135deg, rgba(29,111,219,0.08), rgba(56,189,248,0.08))', border: '1px solid rgba(29,111,219,0.2)', borderRadius: '10px', padding: '10px 16px', marginBottom: '20px', fontSize: '13px', color: '#1d6fdb', fontFamily: "'Inter', sans-serif" },
   statusRow: { display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 4px', marginTop: 'auto', marginBottom: '8px' },
   statusDot: { width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0 },
