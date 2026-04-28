@@ -3,7 +3,7 @@ import Dashboards from './Dashboards'
 import Lifecycles from './Lifecycles'
 import AiInsights from './AiInsights'
 
-function InsightsHub() {
+function InsightsHub({ onUse }) {
   const [activeTab, setActiveTab] = useState('dashboards')
 
   return (
@@ -23,7 +23,7 @@ function InsightsHub() {
 
       {activeTab === 'dashboards' && <Dashboards embedded />}
       {activeTab === 'lifecycles' && <Lifecycles embedded />}
-      {activeTab === 'ai'         && <AiInsights embedded />}
+      {activeTab === 'ai'         && <AiInsights embedded onUse={onUse} />}
     </div>
   )
 }

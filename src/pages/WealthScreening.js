@@ -164,7 +164,7 @@ function YesNoPill({ value }) {
 
 // ─── Single Constituent tab ───────────────────────────────────────────────────
 
-function SingleConstituentTab() {
+function SingleConstituentTab({ onUse }) {
   const [custNo, setCustNo] = useState('')
   const [loading, setLoading] = useState(false)
   const [profile, setProfile] = useState(null)
@@ -177,6 +177,7 @@ function SingleConstituentTab() {
     await new Promise(r => setTimeout(r, 1200))
     setLoading(false); setSearched(true); setLastCustNo(custNo)
     setProfile(WEALTH_PROFILES[Number(custNo)] || fakeWealthProfile(custNo))
+    if (onUse) onUse(2)
   }
 
   return (
@@ -268,7 +269,7 @@ function SingleConstituentTab() {
 
 // ─── Screen a List tab ────────────────────────────────────────────────────────
 
-function ScreenListTab() {
+function ScreenListTab({ onUse }) {
   const [search, setSearch]           = useState('')
   const [category, setCategory]       = useState('All categories')
   const [selectedList, setSelectedList] = useState('')
@@ -316,6 +317,7 @@ function ScreenListTab() {
       setResults([...done])
     }
     setStage('done')
+    if (!cancelRef.current && onUse) onUse(Math.max(1, Math.floor(previewRows.length / 5)))
   }
 
   const handleCancel = () => { cancelRef.current = true }
@@ -539,7 +541,7 @@ function StatPill({ label, value, color }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-function WealthScreening() {
+function WealthScreening({ onUse }) {
   const [activeTab, setActiveTab] = useState('single')
 
   return (
@@ -557,8 +559,8 @@ function WealthScreening() {
         <TabButton label="Screen a List" active={activeTab === 'list'}   onClick={() => setActiveTab('list')} />
       </div>
 
-      {activeTab === 'single' && <SingleConstituentTab />}
-      {activeTab === 'list'   && <ScreenListTab />}
+      {activeTab === 'single' && <SingleConstituentTab onUse={onUse} />}
+      {activeTab === 'list'   && <ScreenListTab onUse={onUse} />}
     </div>
   )
 }

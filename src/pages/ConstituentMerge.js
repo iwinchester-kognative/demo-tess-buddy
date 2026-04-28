@@ -9,7 +9,7 @@ const PROCS = {
  
 const TESSITURA_BASE = 'https://spoletussc0webtest.tnhs.cloud/Tessitura/#/crm/constituents'
  
-function ConstituentMerge({ orgData }) {
+function ConstituentMerge({ orgData, onUse }) {
   const [activeTab, setActiveTab] = useState('bulk')
   const [pool, setPool] = useState([])
   const [unscheduledCriteria, setUnscheduledCriteria] = useState(new Set())
@@ -160,6 +160,7 @@ function ConstituentMerge({ orgData }) {
         setHasReviewed(false)
         setStep('done')
         setMessage({ type: 'success', text: 'Merges committed successfully.' })
+        if (onUse) onUse(3)
       } else {
         setMessage({ type: 'error', text: 'Failed to commit merges.' })
       }
@@ -938,6 +939,152 @@ function ConstituentMerge({ orgData }) {
   )
 }
 
+// ─── Merge tool flat cards (exported for homescreen Quick Tools) ──────────────
+
+const FAKE_NAMES_QT = [
+  ['Arthur','Williams'],['Priya','Patel'],['Kathleen',"O'Brien"],
+  ['Hideo','Nakamura'],['David','Rosenberg'],['Carmen','Torres'],
+  ['George','Blackwell'],['Abena','Osei'],['Lucas','Ferreira'],['Lena','Gustafsson']
+]
+const fakeNameQT = (n) => FAKE_NAMES_QT[Math.abs(Number(n) || 0) % FAKE_NAMES_QT.length]
+
+function OneOffMergeTool() {
+  const [keepNo, setKeepNo]     = useState('')
+  const [deleteNo, setDeleteNo] = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [result, setResult]     = useState(null)
+
+  const handleMerge = async () => {
+    setLoading(true); setResult(null)
+    await new Promise(r => setTimeout(r, 900))
+    const [kf, kl] = fakeNameQT(keepNo)
+    const [df, dl] = fakeNameQT(deleteNo)
+    setResult({ keepNo, keepName: `${kf} ${kl}`, deleteNo, deleteName: `${df} ${dl}`, at: new Date().toLocaleTimeString() })
+    setKeepNo(''); setDeleteNo(''); setLoading(false)
+  }
+
+  const can = keepNo.trim() && deleteNo.trim()
+
+  return (
+    <div style={qs.card}>
+      <div style={{ ...qs.head, cursor: 'default' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '20px', lineHeight: 1 }}>🔀</span>
+          <div>
+            <p style={{ fontSize: '13px', fontWeight: '700', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>One-off Merge</p>
+            <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>Merge a single constituent pair immediately</p>
+          </div>
+        </div>
+      </div>
+      <div style={qs.body}>
+        <div style={qs.fieldGroup}>
+          <label style={qs.label}>Keep Customer #</label>
+          <input value={keepNo} onChange={e => { setKeepNo(e.target.value); setResult(null) }} placeholder="e.g. 100042" style={qs.input} disabled={loading} />
+        </div>
+        <div style={{ ...qs.fieldGroup, marginBottom: '14px' }}>
+          <label style={qs.label}>Delete Customer #</label>
+          <input value={deleteNo} onChange={e => { setDeleteNo(e.target.value); setResult(null) }} placeholder="e.g. 100099" style={qs.input} disabled={loading} />
+        </div>
+        <button onClick={handleMerge} disabled={!can || loading} style={{ ...qs.btn, width: '100%', opacity: can && !loading ? 1 : 0.5, cursor: can && !loading ? 'pointer' : 'not-allowed' }}>
+          {loading ? 'Merging…' : 'Merge'}
+        </button>
+        {result && (
+          <div style={{ marginTop: '10px', padding: '8px 12px', background: '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '7px' }}>
+            <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: '#16a34a', fontFamily: "'Inter', sans-serif" }}>✓ Merged at {result.at}</p>
+            <p style={{ margin: '3px 0 0', fontSize: '11px', color: '#4b5563', fontFamily: "'Inter', sans-serif" }}>#{result.deleteNo} ({result.deleteName}) → #{result.keepNo} ({result.keepName})</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SeparateHHTool() {
+  const [hhNo, setHhNo]       = useState('')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult]   = useState(null)
+
+  const handleSeparate = async () => {
+    setLoading(true); setResult(null)
+    await new Promise(r => setTimeout(r, 900))
+    const [f, l] = fakeNameQT(hhNo)
+    setResult({ hhNo, hhName: `${f} ${l} Household`, newNo: Number(hhNo) + 10000, newName: `${f} ${l}`, at: new Date().toLocaleTimeString() })
+    setHhNo(''); setLoading(false)
+  }
+
+  return (
+    <div style={qs.card}>
+      <div style={{ ...qs.head, cursor: 'default' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '20px', lineHeight: 1 }}>🏠</span>
+          <div>
+            <p style={{ fontSize: '13px', fontWeight: '700', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>Separate Household</p>
+            <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>Split a household member into their own record</p>
+          </div>
+        </div>
+      </div>
+      <div style={qs.body}>
+        <div style={{ ...qs.fieldGroup, marginBottom: '14px' }}>
+          <label style={qs.label}>Household Customer #</label>
+          <input value={hhNo} onChange={e => { setHhNo(e.target.value); setResult(null) }} placeholder="e.g. 200184" style={qs.input} disabled={loading} />
+        </div>
+        <button onClick={handleSeparate} disabled={!hhNo.trim() || loading} style={{ ...qs.btn, width: '100%', opacity: hhNo.trim() && !loading ? 1 : 0.5, cursor: hhNo.trim() && !loading ? 'pointer' : 'not-allowed' }}>
+          {loading ? 'Separating…' : 'Separate'}
+        </button>
+        {result && (
+          <div style={{ marginTop: '10px', padding: '8px 12px', background: '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '7px' }}>
+            <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: '#16a34a', fontFamily: "'Inter', sans-serif" }}>✓ Separated at {result.at}</p>
+            <p style={{ margin: '3px 0 0', fontSize: '11px', color: '#4b5563', fontFamily: "'Inter', sans-serif" }}>{result.newName} (#{result.newNo}) created from {result.hhName}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function UnmergeTool() {
+  const [custNo, setCustNo]   = useState('')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult]   = useState(null)
+
+  const handleUnmerge = async () => {
+    setLoading(true); setResult(null)
+    await new Promise(r => setTimeout(r, 900))
+    const [f, l] = fakeNameQT(custNo)
+    setResult({ custNo, name: `${f} ${l}`, restoredNo: Number(custNo) + 5000, at: new Date().toLocaleTimeString() })
+    setCustNo(''); setLoading(false)
+  }
+
+  return (
+    <div style={qs.card}>
+      <div style={{ ...qs.head, cursor: 'default' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '20px', lineHeight: 1 }}>↩️</span>
+          <div>
+            <p style={{ fontSize: '13px', fontWeight: '700', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>Unmerge</p>
+            <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>Restore a previously merged constituent record</p>
+          </div>
+        </div>
+      </div>
+      <div style={qs.body}>
+        <div style={{ ...qs.fieldGroup, marginBottom: '14px' }}>
+          <label style={qs.label}>Deleted Customer #</label>
+          <input value={custNo} onChange={e => { setCustNo(e.target.value); setResult(null) }} placeholder="e.g. 100099" style={qs.input} disabled={loading} />
+        </div>
+        <button onClick={handleUnmerge} disabled={!custNo.trim() || loading} style={{ ...qs.btn, background: 'linear-gradient(135deg, #d97706, #f59e0b)', width: '100%', opacity: custNo.trim() && !loading ? 1 : 0.5, cursor: custNo.trim() && !loading ? 'pointer' : 'not-allowed' }}>
+          {loading ? 'Restoring…' : 'Unmerge'}
+        </button>
+        {result && (
+          <div style={{ marginTop: '10px', padding: '8px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '7px' }}>
+            <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: '#d97706', fontFamily: "'Inter', sans-serif" }}>✓ Restored at {result.at}</p>
+            <p style={{ margin: '3px 0 0', fontSize: '11px', color: '#4b5563', fontFamily: "'Inter', sans-serif" }}>{result.name} restored as #{result.restoredNo}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Schedule Auto-Merge tool (exported for homescreen Quick Tools) ───────────
 
 const qs = {
@@ -951,26 +1098,20 @@ const qs = {
 }
 
 const MERGE_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
-const MERGE_TIME_OPTS = [
-  { value: '2am',  label: '2:00 AM — Before business hours' },
-  { value: '11pm', label: '11:00 PM — End of day' },
-]
 
 function ScheduleAutoMergeTool({ active, onToggle }) {
-  const [selectedDay, setSelectedDay]   = useState('Sunday')
-  const [selectedTime, setSelectedTime] = useState('2am')
-  const [scheduled, setScheduled]       = useState(null)
-  const [saving, setSaving]             = useState(false)
+  const [selectedDay, setSelectedDay] = useState('Sunday')
+  const [scheduled, setScheduled]     = useState(null)
+  const [saving, setSaving]           = useState(false)
 
   const accordionMode = typeof onToggle === 'function'
   const showBody      = accordionMode ? active : true
-  const timeLabel     = MERGE_TIME_OPTS.find(t => t.value === selectedTime)?.label.split('—')[0].trim() || '2:00 AM'
 
   const handleSave = async () => {
     setSaving(true)
     await new Promise(r => setTimeout(r, 900))
     setSaving(false)
-    setScheduled({ day: selectedDay, time: selectedTime })
+    setScheduled({ day: selectedDay })
   }
 
   const handleCancelSchedule = async () => {
@@ -991,7 +1132,7 @@ function ScheduleAutoMergeTool({ active, onToggle }) {
           <div>
             <p style={{ fontSize: '13px', fontWeight: '700', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>Schedule Auto-Merge</p>
             <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>
-              {scheduled ? `⚡ ${scheduled.day}s · ${timeLabel}` : 'Auto-run bulk merge on a chosen day each week'}
+              {scheduled ? `⚡ Every ${scheduled.day}` : 'Auto-run bulk merge on a chosen day each week'}
             </p>
           </div>
         </div>
@@ -1005,7 +1146,7 @@ function ScheduleAutoMergeTool({ active, onToggle }) {
               <div style={{ background: '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', padding: '12px 14px', marginBottom: '14px' }}>
                 <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#16a34a', fontFamily: "'Inter', sans-serif" }}>✓ Auto-merge scheduled</p>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#4b5563', fontFamily: "'Inter', sans-serif" }}>
-                  Runs every <strong>{scheduled.day}</strong> at <strong>{timeLabel}</strong> in the background. Results appear in Recent Merges.
+                  Runs every <strong>{scheduled.day}</strong> in the background. Results appear in Recent Merges.
                 </p>
               </div>
               <button
@@ -1018,7 +1159,7 @@ function ScheduleAutoMergeTool({ active, onToggle }) {
             </>
           ) : (
             <>
-              <div style={qs.fieldGroup}>
+              <div style={{ ...qs.fieldGroup, marginBottom: '14px' }}>
                 <label style={qs.label}>Day of week</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {MERGE_DAYS.map(day => (
@@ -1037,16 +1178,6 @@ function ScheduleAutoMergeTool({ active, onToggle }) {
                     </button>
                   ))}
                 </div>
-              </div>
-              <div style={{ ...qs.fieldGroup, marginBottom: '14px' }}>
-                <label style={qs.label}>Run time</label>
-                <select
-                  value={selectedTime}
-                  onChange={e => setSelectedTime(e.target.value)}
-                  style={{ ...qs.input, background: 'white' }}
-                >
-                  {MERGE_TIME_OPTS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
               </div>
               <button
                 onClick={handleSave}
@@ -1135,5 +1266,5 @@ const styles = {
 }
  
 
-export { ScheduleAutoMergeTool }
+export { ScheduleAutoMergeTool, OneOffMergeTool, SeparateHHTool, UnmergeTool }
 export default ConstituentMerge

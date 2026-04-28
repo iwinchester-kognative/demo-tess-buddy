@@ -1032,7 +1032,7 @@ function QuickToolsTab() {
 
 // ── Promo Code Creator ─────────────────────────────────────────────────────────
 
-function PromoCodeTool({ active, onToggle }) {
+function PromoCodeTool({ active, onToggle, flat }) {
   const [code, setCode] = useState('')
   const [discount, setDiscount] = useState('')
   const [discountType, setDiscountType] = useState('percent')
@@ -1076,7 +1076,7 @@ function PromoCodeTool({ active, onToggle }) {
 
   return (
     <div style={qtStyles.card}>
-      <div style={qtStyles.cardHead} onClick={onToggle}>
+      <div style={{ ...qtStyles.cardHead, cursor: flat ? 'default' : 'pointer' }} onClick={flat ? undefined : onToggle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={qtStyles.icon}>🏷️</span>
           <div>
@@ -1084,9 +1084,9 @@ function PromoCodeTool({ active, onToggle }) {
             <p style={qtStyles.toolDesc}>New discount code with optional date window</p>
           </div>
         </div>
-        <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>
+        {!flat && <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>}
       </div>
-      {active && (
+      {(flat || active) && (
         <div style={qtStyles.body}>
           <div style={qtStyles.fieldGroup}>
             <label style={qtStyles.label}>Code</label>
@@ -1158,7 +1158,7 @@ function PromoCodeTool({ active, onToggle }) {
 
 // ── Source Code Creator ────────────────────────────────────────────────────────
 
-function SourceCodeTool({ active, onToggle, onCreated }) {
+function SourceCodeTool({ active, onToggle, onCreated, flat }) {
   const [code, setCode] = useState('')
   const [appeal, setAppeal] = useState('')
   const [description, setDescription] = useState('')
@@ -1200,7 +1200,7 @@ function SourceCodeTool({ active, onToggle, onCreated }) {
 
   return (
     <div style={qtStyles.card}>
-      <div style={qtStyles.cardHead} onClick={onToggle}>
+      <div style={{ ...qtStyles.cardHead, cursor: flat ? 'default' : 'pointer' }} onClick={flat ? undefined : onToggle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={qtStyles.icon}>📊</span>
           <div>
@@ -1208,9 +1208,9 @@ function SourceCodeTool({ active, onToggle, onCreated }) {
             <p style={qtStyles.toolDesc}>New source code linked to an appeal</p>
           </div>
         </div>
-        <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>
+        {!flat && <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>}
       </div>
-      {active && (
+      {(flat || active) && (
         <div style={qtStyles.body}>
           <div style={qtStyles.fieldGroup}>
             <label style={qtStyles.label}>Source code</label>
@@ -1269,7 +1269,7 @@ const EXISTING_SOURCE_CODES = [
   { code: 'EOY25-EMAIL',label: 'EOY25-EMAIL — End of Year Email' },
 ]
 
-function PromoteToSourceTool({ active, onToggle, defaultSourceCode }) {
+function PromoteToSourceTool({ active, onToggle, defaultSourceCode, flat }) {
   const [sourceCode, setSourceCode] = useState('')
   const [listId, setListId] = useState('')
   const [loading, setLoading] = useState(false)
@@ -1317,7 +1317,7 @@ function PromoteToSourceTool({ active, onToggle, defaultSourceCode }) {
 
   return (
     <div style={qtStyles.card}>
-      <div style={qtStyles.cardHead} onClick={onToggle}>
+      <div style={{ ...qtStyles.cardHead, cursor: flat ? 'default' : 'pointer' }} onClick={flat ? undefined : onToggle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={qtStyles.icon}>🔗</span>
           <div>
@@ -1325,9 +1325,9 @@ function PromoteToSourceTool({ active, onToggle, defaultSourceCode }) {
             <p style={qtStyles.toolDesc}>Link a source code to a Tessitura list</p>
           </div>
         </div>
-        <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>
+        {!flat && <span style={{ fontSize: '12px', color: '#9ca3af' }}>{active ? '▲' : '▼'}</span>}
       </div>
-      {active && (
+      {(flat || active) && (
         <div style={qtStyles.body}>
           <div style={qtStyles.fieldGroup}>
             <label style={qtStyles.label}>Source code</label>

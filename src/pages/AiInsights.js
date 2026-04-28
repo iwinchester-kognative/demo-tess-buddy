@@ -205,7 +205,7 @@ const SUGGESTIONS = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-function AiInsights({ embedded }) {
+function AiInsights({ embedded, onUse }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -227,6 +227,7 @@ function AiInsights({ embedded }) {
     try {
       const response = await fakeInsightResponse(userText)
       setMessages(prev => [...prev, { role: 'assistant', text: response }])
+      if (onUse) onUse(1)
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', text: 'Something went wrong. Try again.' }])
     }

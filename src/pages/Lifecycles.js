@@ -156,16 +156,24 @@ function StageCard({ stage, onMakeList, listBuilding, listBuilt }) {
       }}
     >
       <div style={{ padding: '16px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-          <span style={{ fontSize: '20px' }}>{stage.icon}</span>
-          <div>
-            {stage.status && (
-              <span style={{ fontSize: '10px', fontWeight: '700', color: '#9ca3af', fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase', display: 'block' }}>
-                {stage.status}
-              </span>
-            )}
-            <p style={{ fontSize: '14px', fontWeight: '700', color: stage.color, margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{stage.label}</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '20px' }}>{stage.icon}</span>
+            <div>
+              {stage.status && (
+                <span style={{ fontSize: '10px', fontWeight: '700', color: '#9ca3af', fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase', display: 'block' }}>
+                  {stage.status}
+                </span>
+              )}
+              <p style={{ fontSize: '14px', fontWeight: '700', color: stage.color, margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{stage.label}</p>
+            </div>
           </div>
+          {stage.count && (
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '20px', fontWeight: '800', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1 }}>{stage.count}</p>
+              <p style={{ fontSize: '10px', color: '#9ca3af', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>constituents</p>
+            </div>
+          )}
         </div>
         <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.55', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>{stage.description}</p>
 
@@ -249,23 +257,33 @@ function MembershipTab() {
 
   return (
     <div>
-      {/* Summary bar — no counts */}
-      <div style={s.flowCard}>
-        <p style={s.flowTitle}>Membership Status Overview</p>
-        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '14px' }}>
-          {MEMBERSHIP_SEGMENTS.map(seg => (
-            <div key={seg.key} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
-              <span style={{ fontSize: '12px', fontWeight: '700', color: seg.color, fontFamily: "'Inter', sans-serif" }}>{seg.label}</span>
+      {/* Summary bar */}
+      {(() => {
+        const total = MEMBERSHIP_SEGMENTS.reduce((a, s) => a + Number(s.count.replace(/,/g, '')), 0)
+        return (
+          <div style={s.flowCard}>
+            <p style={s.flowTitle}>Membership Status Overview</p>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '14px' }}>
+              {MEMBERSHIP_SEGMENTS.map(seg => {
+                const pct = Math.round((Number(seg.count.replace(/,/g, '')) / total) * 100)
+                return (
+                  <div key={seg.key} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: seg.color, fontFamily: "'Inter', sans-serif" }}>{seg.label}</span>
+                    <span style={{ fontSize: '12px', color: '#9ca3af', fontFamily: "'Inter', sans-serif" }}>{seg.count} ({pct}%)</span>
+                  </div>
+                )
+              })}
             </div>
-          ))}
-        </div>
-        <div style={{ display: 'flex', height: '8px', borderRadius: '6px', overflow: 'hidden', gap: '2px' }}>
-          {MEMBERSHIP_SEGMENTS.map(seg => (
-            <div key={seg.key} style={{ flex: 1, background: seg.color }} />
-          ))}
-        </div>
-      </div>
+            <div style={{ display: 'flex', height: '8px', borderRadius: '6px', overflow: 'hidden', gap: '2px' }}>
+              {MEMBERSHIP_SEGMENTS.map(seg => {
+                const pct = Math.round((Number(seg.count.replace(/,/g, '')) / total) * 100)
+                return <div key={seg.key} style={{ width: `${pct}%`, background: seg.color }} />
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Status cards — always expanded, no counts */}
       <div style={s.grid}>
@@ -284,9 +302,15 @@ function MembershipTab() {
               }}
             >
               <div style={{ padding: '16px 18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '22px' }}>{seg.icon}</span>
-                  <p style={{ fontSize: '15px', fontWeight: '700', color: seg.color, margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{seg.label}</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '22px' }}>{seg.icon}</span>
+                    <p style={{ fontSize: '15px', fontWeight: '700', color: seg.color, margin: 0, fontFamily: "'Space Grotesk', sans-serif" }}>{seg.label}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '22px', fontWeight: '800', color: '#0c1a33', margin: 0, fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1 }}>{seg.count}</p>
+                    <p style={{ fontSize: '10px', color: '#9ca3af', margin: '2px 0 0', fontFamily: "'Inter', sans-serif" }}>members</p>
+                  </div>
                 </div>
                 <p style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.55', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>{seg.description}</p>
 
@@ -298,13 +322,6 @@ function MembershipTab() {
                   <p style={detailLabel}>Recommended Action</p>
                   <p style={detailText}>{seg.action}</p>
                 </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <p style={detailLabel}>Generated SQL</p>
-                  <pre style={{ fontSize: '11px', color: '#374151', background: '#f0f4fa', borderRadius: '6px', padding: '10px 12px', margin: 0, overflowX: 'auto', fontFamily: "ui-monospace, 'Cascadia Code', monospace", lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                    {seg.sql}
-                  </pre>
-                </div>
-
                 <button
                   onClick={() => handleMakeList(seg.key)}
                   disabled={isBuilding || isBuilt}

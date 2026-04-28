@@ -172,7 +172,7 @@ function classifyMelissaAddress(record, inputAddress) {
   return { action: 'INCONCLUSIVE', newAddress: null, codes }
 }
 
-function Screening({ orgData }) {
+function Screening({ orgData, onUse }) {
   const [activeTab, setActiveTab] = useState('email')
 
   return (
@@ -193,10 +193,10 @@ function Screening({ orgData }) {
       </div>
 
       <div style={styles.panel}>
-        {activeTab === 'email'    && <BulkTab streamLabel="Email"   orgData={orgData} />}
-        {activeTab === 'phone'    && <BulkTab streamLabel="Phone"   orgData={orgData} />}
-        {activeTab === 'address'  && <BulkTab streamLabel="Address" orgData={orgData} />}
-        {activeTab === 'singular' && <SingularTab orgData={orgData} />}
+        {activeTab === 'email'    && <BulkTab streamLabel="Email"   orgData={orgData} onUse={onUse} />}
+        {activeTab === 'phone'    && <BulkTab streamLabel="Phone"   orgData={orgData} onUse={onUse} />}
+        {activeTab === 'address'  && <BulkTab streamLabel="Address" orgData={orgData} onUse={onUse} />}
+        {activeTab === 'singular' && <SingularTab orgData={orgData} onUse={onUse} />}
       </div>
     </div>
   )
@@ -227,7 +227,7 @@ function normalizeList(raw) {
   return { id, name, category, categoryId }
 }
 
-function BulkTab({ streamLabel, orgData }) {
+function BulkTab({ streamLabel, orgData, onUse }) {
   const [lists, setLists]                 = useState([])
   const [categories, setCategories]       = useState([])
   const [loadingLists, setLoadingLists]   = useState(true)
@@ -596,6 +596,7 @@ function BulkTab({ streamLabel, orgData }) {
         ? { type: 'warn',    text: `Stopped after ${stats.processed} of ${stats.total} ${lower}${stats.processed === 1 ? '' : 's'}.` }
         : { type: 'success', text: `Done — screened ${stats.processed} ${lower}${stats.processed === 1 ? '' : 's'}.` }
     )
+    if (!cancelRef.current && onUse) onUse(Math.max(1, Math.floor(stats.processed / 10)))
   }
 
   const handleCancelRun = () => {
@@ -843,7 +844,7 @@ function BulkLogTable({ log, live = false }) {
 //                                                          @new_email (corrected only),
 //                                                          @melissa_code (raw response JSON)
 
-function SingularTab({ orgData }) {
+function SingularTab({ orgData, onUse }) {
   const [contactType, setContactType] = useState('email')
   const [customerNo, setCustomerNo]   = useState('')
 
@@ -1107,6 +1108,7 @@ function SingularTab({ orgData }) {
       setSummary(rows[0] || null)
       setStage('applied')
       setMessage({ type: 'success', text: 'Updated in Tessitura. See summary below.' })
+      if (onUse) onUse(1)
     } catch (err) {
       setMessage({ type: 'error', text: 'Error: ' + err.message })
     }

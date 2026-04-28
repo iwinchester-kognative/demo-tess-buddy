@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import ConstituentMerge, { ScheduleAutoMergeTool } from './ConstituentMerge'
+import ConstituentMerge, { ScheduleAutoMergeTool, OneOffMergeTool, SeparateHHTool, UnmergeTool } from './ConstituentMerge'
 import AgedRecordRemoval from './AgedRecordRemoval'
 import Screening from './Screening'
 import BuildSegment, { PromoCodeTool, SourceCodeTool, PromoteToSourceTool } from './BuildSegment'
@@ -8,24 +8,30 @@ import WealthScreening from './WealthScreening'
 import InsightsHub from './InsightsHub'
 
 function HomeQuickTools() {
-  const [activeTool, setActiveTool] = useState(null)
   const [lastSourceCode, setLastSourceCode] = useState(null)
-  const toggle = (name) => setActiveTool(prev => prev === name ? null : name)
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px' }}>
-      <PromoCodeTool       active={activeTool === 'promo'}    onToggle={() => toggle('promo')} />
-      <SourceCodeTool      active={activeTool === 'source'}   onToggle={() => toggle('source')}   onCreated={code => setLastSourceCode(code)} />
-      <PromoteToSourceTool active={activeTool === 'promote'}  onToggle={() => toggle('promote')}  defaultSourceCode={lastSourceCode} />
-      <ScheduleAutoMergeTool active={activeTool === 'schedule'} onToggle={() => toggle('schedule')} />
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px', gridAutoRows: 'minmax(220px, auto)' }}>
+      <PromoCodeTool       flat active={false} />
+      <SourceCodeTool      flat active={false} onCreated={code => setLastSourceCode(code)} />
+      <PromoteToSourceTool flat active={false} defaultSourceCode={lastSourceCode} />
+      <ScheduleAutoMergeTool />
+      <OneOffMergeTool />
+      <SeparateHHTool />
+      <UnmergeTool />
     </div>
   )
 }
+
+const CREDIT_LIMIT = 500
 
 function Dashboard({ session, orgData }) {
   const [apiStatus, setApiStatus] = useState('checking')
   const [activePage, setActivePage] = useState('dashboard')
   const [optimizing, setOptimizing] = useState(false)
   const [optimizeResult, setOptimizeResult] = useState(null)
+  const [credits, setCredits] = useState(47)
+
+  const addCredits = (n = 1) => setCredits(prev => Math.min(prev + n, CREDIT_LIMIT))
 
   const handleOptimizeIntegrations = async () => {
     setOptimizing(true)
@@ -100,6 +106,29 @@ function Dashboard({ session, orgData }) {
             <button style={activePage === 'insights' ? styles.navLinkActive : styles.navLink} onClick={() => setActivePage('insights')}>Insights</button>
           </div>
         </nav>
+
+        {/* Usage tracker */}
+        <div style={styles.usageBlock}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+            <span style={styles.usageLabel}>Credits Used</span>
+            <span style={styles.usageCount}>{credits} <span style={{ fontWeight: '400', color: '#9ca3af' }}>/ {CREDIT_LIMIT}</span></span>
+          </div>
+          <div style={styles.usageTrack}>
+            <div style={{
+              ...styles.usageFill,
+              width: `${Math.min((credits / CREDIT_LIMIT) * 100, 100)}%`,
+              background: credits / CREDIT_LIMIT > 0.85 ? 'linear-gradient(90deg, #f59e0b, #ef4444)' :
+                          credits / CREDIT_LIMIT > 0.6  ? 'linear-gradient(90deg, #1d6fdb, #f59e0b)' :
+                          'linear-gradient(90deg, #1d6fdb, #38bdf8)',
+            }} />
+          </div>
+          <p style={styles.usageHint}>
+            {credits / CREDIT_LIMIT > 0.85 ? '⚠️ Approaching limit' :
+             credits / CREDIT_LIMIT > 0.6  ? 'Moderate usage' :
+             'Usage within normal range'}
+          </p>
+        </div>
+
         <div style={styles.statusRow}>
           <div style={{ ...styles.statusDot, backgroundColor: status.dot }} />
           <span style={{ ...styles.statusLabel, color: status.color }}>
@@ -201,22 +230,22 @@ function Dashboard({ session, orgData }) {
           </>
         )}
         {activePage === 'constituentMerge' && (
-          <ConstituentMerge orgData={orgData} />
+          <ConstituentMerge orgData={orgData} onUse={addCredits} />
         )}
         {activePage === 'agedRecordRemoval' && (
           <AgedRecordRemoval orgData={orgData} />
         )}
         {activePage === 'screening' && (
-          <Screening orgData={orgData} />
+          <Screening orgData={orgData} onUse={addCredits} />
         )}
         {activePage === 'wealthScreening' && (
-          <WealthScreening />
+          <WealthScreening onUse={addCredits} />
         )}
         {activePage === 'buildSegment' && (
           <BuildSegment orgData={orgData} />
         )}
         {activePage === 'insights' && (
-          <InsightsHub />
+          <InsightsHub onUse={addCredits} />
         )}
       </div>
     </div>
@@ -268,7 +297,13 @@ const styles = {
   grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', maxWidth: '700px' },
   card: { backgroundColor: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 2px 16px rgba(29,111,219,0.08)', border: '1px solid rgba(29,111,219,0.1)' },
   cardTitle: { fontSize: '16px', fontWeight: '700', color: '#0c1a33', marginBottom: '8px', fontFamily: "'Space Grotesk', sans-serif" },
-  cardDesc: { fontSize: '13px', color: '#4b5563', lineHeight: '1.6', fontFamily: "'Inter', sans-serif" }
+  cardDesc: { fontSize: '13px', color: '#4b5563', lineHeight: '1.6', fontFamily: "'Inter', sans-serif" },
+  usageBlock: { margin: '16px 0 12px', padding: '12px 10px', background: 'rgba(29,111,219,0.04)', borderRadius: '10px', border: '1px solid rgba(29,111,219,0.1)' },
+  usageLabel: { fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#9ca3af', fontFamily: "'Inter', sans-serif" },
+  usageCount: { fontSize: '13px', fontWeight: '700', color: '#0c1a33', fontFamily: "'Inter', sans-serif" },
+  usageTrack: { height: '6px', background: 'rgba(29,111,219,0.1)', borderRadius: '100px', overflow: 'hidden' },
+  usageFill: { height: '100%', borderRadius: '100px', transition: 'width 0.4s ease' },
+  usageHint: { fontSize: '10px', color: '#9ca3af', marginTop: '6px', fontFamily: "'Inter', sans-serif" }
 }
 
 export default Dashboard
