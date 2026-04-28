@@ -203,7 +203,7 @@ function StageCard({ stage, index, total, isActive, onClick, onMakeList, listBui
             onClick={e => { e.stopPropagation(); onMakeList() }}
             disabled={listBuilding || listBuilt}
             style={{
-              padding: '7px 16px', border: 'none', borderRadius: '7px',
+              padding: '7px 16px', borderRadius: '7px',
               background: listBuilt ? '#f0fff4' : listBuilding ? '#d1d9e6' : 'linear-gradient(135deg, #1d6fdb, #38bdf8)',
               color: listBuilt ? '#16a34a' : 'white',
               fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
@@ -375,7 +375,7 @@ function MembershipTab() {
                     onClick={e => { e.stopPropagation(); handleMakeList(seg.key) }}
                     disabled={isBuilding || isBuilt}
                     style={{
-                      padding: '7px 16px', border: 'none', borderRadius: '7px',
+                      padding: '7px 16px', borderRadius: '7px',
                       background: isBuilt ? '#f0fff4' : isBuilding ? '#d1d9e6' : 'linear-gradient(135deg, #1d6fdb, #38bdf8)',
                       color: isBuilt ? '#16a34a' : 'white',
                       fontSize: '12px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
