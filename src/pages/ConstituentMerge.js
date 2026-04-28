@@ -1099,9 +1099,12 @@ const qs = {
 
 const MERGE_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
 
+// Module-level store — persists for the lifetime of the browser session
+let _savedMergeSchedule = null
+
 function ScheduleAutoMergeTool({ active, onToggle }) {
-  const [selectedDay, setSelectedDay] = useState('Sunday')
-  const [scheduled, setScheduled]     = useState(null)
+  const [selectedDay, setSelectedDay] = useState(_savedMergeSchedule?.day || 'Sunday')
+  const [scheduled, setScheduled]     = useState(_savedMergeSchedule)
   const [saving, setSaving]           = useState(false)
 
   const accordionMode = typeof onToggle === 'function'
@@ -1111,13 +1114,16 @@ function ScheduleAutoMergeTool({ active, onToggle }) {
     setSaving(true)
     await new Promise(r => setTimeout(r, 900))
     setSaving(false)
-    setScheduled({ day: selectedDay })
+    const s = { day: selectedDay }
+    _savedMergeSchedule = s
+    setScheduled(s)
   }
 
   const handleCancelSchedule = async () => {
     setSaving(true)
     await new Promise(r => setTimeout(r, 600))
     setSaving(false)
+    _savedMergeSchedule = null
     setScheduled(null)
   }
 

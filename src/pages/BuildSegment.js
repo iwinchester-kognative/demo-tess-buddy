@@ -126,8 +126,8 @@ function BuildSegment({ orgData }) {
       <div style={styles.tabBar}>
         <TabButton label="Suggested"    active={activeTab === 'suggested'}  onClick={() => setActiveTab('suggested')} />
         <TabButton label="Build"        active={activeTab === 'build'}      onClick={() => setActiveTab('build')} />
-        <TabButton label="Quick Tools"  active={activeTab === 'quickTools'} onClick={() => setActiveTab('quickTools')} />
         <TabButton label="My Segments"  active={activeTab === 'mySegments'} onClick={() => setActiveTab('mySegments')} />
+        <TabButton label="Quick Tools"  active={activeTab === 'quickTools'} onClick={() => setActiveTab('quickTools')} />
       </div>
 
       <div style={(activeTab === 'quickTools' || activeTab === 'suggested') ? styles.panelWide : styles.panel}>

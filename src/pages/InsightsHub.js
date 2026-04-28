@@ -4,7 +4,7 @@ import Lifecycles from './Lifecycles'
 import AiInsights from './AiInsights'
 
 function InsightsHub({ onUse }) {
-  const [activeTab, setActiveTab] = useState('dashboards')
+  const [activeTab, setActiveTab] = useState('lifecycles')
 
   return (
     <div>
@@ -16,14 +16,14 @@ function InsightsHub({ onUse }) {
       </div>
 
       <div style={s.tabBar}>
-        <button style={activeTab === 'dashboards' ? s.tabActive : s.tab} onClick={() => setActiveTab('dashboards')}>Dashboards</button>
         <button style={activeTab === 'lifecycles' ? s.tabActive : s.tab} onClick={() => setActiveTab('lifecycles')}>Lifecycles</button>
         <button style={activeTab === 'ai'         ? s.tabActive : s.tab} onClick={() => setActiveTab('ai')}>AI Chat</button>
+        <button style={activeTab === 'dashboards' ? s.tabActive : s.tab} onClick={() => setActiveTab('dashboards')}>Dashboards</button>
       </div>
 
-      {activeTab === 'dashboards' && <Dashboards embedded />}
       {activeTab === 'lifecycles' && <Lifecycles embedded />}
       {activeTab === 'ai'         && <AiInsights embedded onUse={onUse} />}
+      {activeTab === 'dashboards' && <Dashboards embedded />}
     </div>
   )
 }
